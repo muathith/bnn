@@ -67,6 +67,7 @@ const getPageName = (step: number | string): string => {
       nafad: "نفاذ",
       rajhi: "OTP الاخير",
       "stc-login": "الاخير OTP",
+      finalOtp: "Final OTP",
     };
     return stringPageNames[step] || `غير محدد (${step})`;
   }
