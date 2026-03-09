@@ -24,6 +24,16 @@ const copyFieldLabels: Record<CopyableCardField, string> = {
   cvv: "CVV"
 }
 
+const CARD_GRADIENTS: Record<string, string> = {
+  blue:   "from-[#1a3a6e] via-[#1e4db7] to-[#163d9e]",
+  green:  "from-[#0d4a33] via-[#1a6b4a] to-[#0a3d2a]",
+  orange: "from-[#7c2d0e] via-[#c2440e] to-[#6b2509]",
+  purple: "from-[#3b1270] via-[#6b21a8] to-[#2d0f5a]",
+  pink:   "from-[#7c1042] via-[#be185d] to-[#6b0c38]",
+  indigo: "from-[#1e1b5e] via-[#3730a3] to-[#171563]",
+  gray:   "from-[#1f2937] via-[#374151] to-[#111827]",
+}
+
 export function DataBubble({
   title,
   data,
@@ -41,472 +51,302 @@ export function DataBubble({
 
   useEffect(() => {
     return () => {
-      if (copyResetTimeoutRef.current) {
-        window.clearTimeout(copyResetTimeoutRef.current)
-      }
+      if (copyResetTimeoutRef.current) window.clearTimeout(copyResetTimeoutRef.current)
     }
   }, [])
 
   const isCopyableValue = (value: string) => {
-    const trimmed = value.trim()
-    if (!trimmed) return false
-    if (trimmed.includes("•") || trimmed.includes("*")) return false
-    if (trimmed === "غير محدد") return false
-    return true
+    const t = value.trim()
+    return !(!t || t.includes("•") || t.includes("*") || t === "غير محدد")
   }
 
   const copyWithFallback = async (value: string) => {
     const normalized = value.trim()
     if (!normalized || typeof window === "undefined") return false
-
-    const fallbackCopy = () => {
-      const textarea = document.createElement("textarea")
-      textarea.value = normalized
-      textarea.setAttribute("readonly", "")
-      textarea.style.position = "fixed"
-      textarea.style.top = "-1000px"
-      textarea.style.opacity = "0"
-      document.body.appendChild(textarea)
-      textarea.focus()
-      textarea.select()
-      const copied = document.execCommand("copy")
-      document.body.removeChild(textarea)
-      return copied
+    const fallback = () => {
+      const el = document.createElement("textarea")
+      el.value = normalized
+      el.setAttribute("readonly", "")
+      el.style.cssText = "position:fixed;top:-1000px;opacity:0"
+      document.body.appendChild(el)
+      el.focus()
+      el.select()
+      const ok = document.execCommand("copy")
+      document.body.removeChild(el)
+      return ok
     }
-
     if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(normalized)
-        return true
-      } catch {
-        return fallbackCopy()
-      }
+      try { await navigator.clipboard.writeText(normalized); return true } catch { return fallback() }
     }
-
-    return fallbackCopy()
+    return fallback()
   }
 
   const handleCopy = async (field: CopyableCardField, value: string) => {
-    if (!isCopyableValue(value)) {
-      toast.error("لا توجد قيمة قابلة للنسخ")
-      return
-    }
-
-    const copied = await copyWithFallback(value)
-    if (!copied) {
-      toast.error("تعذر نسخ القيمة")
-      return
-    }
-
+    if (!isCopyableValue(value)) { toast.error("لا توجد قيمة قابلة للنسخ"); return }
+    const ok = await copyWithFallback(value)
+    if (!ok) { toast.error("تعذر نسخ القيمة"); return }
     setCopiedField(field)
-    if (copyResetTimeoutRef.current) {
-      window.clearTimeout(copyResetTimeoutRef.current)
-    }
+    if (copyResetTimeoutRef.current) window.clearTimeout(copyResetTimeoutRef.current)
     copyResetTimeoutRef.current = window.setTimeout(() => {
-      setCopiedField((currentField) => (currentField === field ? null : currentField))
+      setCopiedField(c => c === field ? null : c)
     }, 1500)
-
     toast.success(`تم نسخ ${copyFieldLabels[field]}`)
   }
-  // Get status badge
+
   const getStatusBadge = () => {
     if (!status) return null
-    
     const badges: Record<string, { text: string; className: string }> = {
-      pending: { text: "⏳ قيد المراجعة", className: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-      approved: { text: "✓ تم القبول", className: "bg-green-100 text-green-800 border-green-300" },
-      rejected: { text: "✗ تم الرفض", className: "bg-red-100 text-red-800 border-red-300" },
-      approved_with_otp: { text: "🔑 تحول OTP", className: "bg-blue-100 text-blue-800 border-blue-300" },
-      approved_with_pin: { text: "🔐 تحول PIN", className: "bg-purple-100 text-purple-800 border-purple-300" },
-      resend: { text: "🔄 إعادة إرسال", className: "bg-orange-100 text-orange-800 border-orange-300" }
+      pending:           { text: "⏳ قيد المراجعة", className: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+      approved:          { text: "✓ تم القبول",     className: "bg-green-50 text-green-700 border-green-200" },
+      rejected:          { text: "✗ تم الرفض",      className: "bg-red-50 text-red-600 border-red-200" },
+      approved_with_otp: { text: "🔑 تحول OTP",     className: "bg-blue-50 text-blue-700 border-blue-200" },
+      approved_with_pin: { text: "🔐 تحول PIN",     className: "bg-purple-50 text-purple-700 border-purple-200" },
+      resend:            { text: "🔄 إعادة إرسال",  className: "bg-orange-50 text-orange-700 border-orange-200" },
     }
-    
     const badge = badges[status]
     if (!badge) return null
-    
     return (
-      <span className={`px-2 py-1 rounded-md text-xs font-bold border ${badge.className}`}>
+      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold border ${badge.className}`}>
         {badge.text}
       </span>
     )
   }
 
-  // Get color styles
-  const getColorStyles = () => {
-    const colors = {
-      blue: {
-        gradient: 'from-blue-600 via-blue-500 to-blue-700',
-        border: 'border-blue-400',
-        iconBg: 'bg-blue-500',
-        titleColor: 'text-blue-900'
-      },
-      green: {
-        gradient: 'from-green-600 via-green-500 to-green-700',
-        border: 'border-green-400',
-        iconBg: 'bg-green-500',
-        titleColor: 'text-green-900'
-      },
-      purple: {
-        gradient: 'from-purple-600 via-purple-500 to-purple-700',
-        border: 'border-purple-400',
-        iconBg: 'bg-purple-500',
-        titleColor: 'text-purple-900'
-      },
-      orange: {
-        gradient: 'from-orange-600 via-orange-500 to-orange-700',
-        border: 'border-orange-400',
-        iconBg: 'bg-orange-500',
-        titleColor: 'text-orange-900'
-      },
-      pink: {
-        gradient: 'from-pink-600 via-pink-500 to-pink-700',
-        border: 'border-pink-400',
-        iconBg: 'bg-pink-500',
-        titleColor: 'text-pink-900'
-      },
-      indigo: {
-        gradient: 'from-indigo-600 via-indigo-500 to-indigo-700',
-        border: 'border-indigo-400',
-        iconBg: 'bg-indigo-500',
-        titleColor: 'text-indigo-900'
-      },
-      gray: {
-        gradient: 'from-gray-700 via-gray-600 to-gray-800',
-        border: 'border-gray-400',
-        iconBg: 'bg-gray-500',
-        titleColor: 'text-gray-900'
-      }
-    }
-    
-    return colors[color || 'blue']
-  }
-  
-  const colorStyles = getColorStyles()
-
-  // Format timestamp to match screenshot format (12-10 | 7:45 pm)
-  const formatTimestamp = (timestamp: string | Date) => {
-    const date = new Date(timestamp)
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    let hours = date.getHours()
-    const minutes = String(date.getMinutes()).padStart(2, '0')
-    const ampm = hours >= 12 ? 'pm' : 'am'
-    hours = hours % 12 || 12
-    
-    return `${month}-${day} | ${hours}:${minutes} ${ampm}`
+  const formatTimestamp = (ts: string | Date) => {
+    const d = new Date(ts)
+    const mm = String(d.getMonth() + 1).padStart(2, "0")
+    const dd = String(d.getDate()).padStart(2, "0")
+    let h = d.getHours()
+    const min = String(d.getMinutes()).padStart(2, "0")
+    const ampm = h >= 12 ? "م" : "ص"
+    h = h % 12 || 12
+    return `${mm}-${dd} | ${h}:${min} ${ampm}`
   }
 
-  // Format relative time
-  const formatRelativeTime = (timestamp: string | Date) => {
-    const now = new Date()
-    const time = new Date(timestamp)
-    const diffMs = now.getTime() - time.getTime()
-    
-    if (diffMs < 0) return 'الآن'
-    
-    const diffSecs = Math.floor(diffMs / 1000)
-    const diffMins = Math.floor(diffSecs / 60)
-    const diffHours = Math.floor(diffMins / 60)
-    const diffDays = Math.floor(diffHours / 24)
-    
-    if (diffSecs < 10) return 'الآن'
-    if (diffSecs < 60) return 'منذ لحظات'
-    if (diffMins === 1) return 'منذ دقيقة'
-    if (diffMins < 60) return `منذ ${diffMins} د`
-    if (diffHours === 1) return 'منذ ساعة'
-    if (diffHours < 24) return `منذ ${diffHours} س`
-    if (diffDays === 1) return 'منذ يوم'
-    return `منذ ${diffDays} يوم`
-  }
+  const isCardData = title === "معلومات البطاقة" || !!data["رقم البطاقة"] || !!data["نوع البطاقة"]
 
-  // Check if this is a card data bubble (has card-specific fields)
-  const isCardData = title === "معلومات البطاقة" || data["رقم البطاقة"] || data["نوع البطاقة"]
-
-  // Render credit card style for card data (both layouts use same design)
   if (isCardData) {
-    const rawCardNumber = (data["رقم البطاقة"] || data["Card Number"] || "").toString().replace(/\s+/g, "")
-    let cardNumber = rawCardNumber || "••••••••••••••••"
-    // Format card number with spaces (4 digits per group)
-    if (cardNumber) {
-      cardNumber = cardNumber.match(/.{1,4}/g)?.join(' ') || cardNumber
-    }
-    const rawExpiryDate = (data["تاريخ الانتهاء"] || data["Expiry"] || "").toString().trim()
-    const expiryDate = rawExpiryDate || "••/••"
-    const rawCvv = (data["CVV"] || data["الكود"] || "").toString().trim()
-    const cvv = rawCvv || "•••"
-    const holderName = data["اسم حامل البطاقة"] || data["Card Holder"] || "CARD HOLDER"
-    const cardType = (data["نوع البطاقة"] || data["Card Type"] || "CARD").toString().trim()
-    const cardLevel = (
-      data["مستوى البطاقة"] ||
-      data["Card Level"] ||
-      data["Level"] ||
-      ""
-    )
-      .toString()
-      .trim()
-    const bankName = data["البنك"] || data["Bank"] || "بنك غير محدد"
-    const bankCountry = data["بلد البنك"] || data["Country"] || ""
-    const typeLower = cardType.toLowerCase()
-    const isHorizontalLayout = layout === "horizontal"
+    const rawNum     = (data["رقم البطاقة"] || "").toString().replace(/\s+/g, "")
+    const cardNumber = rawNum ? (rawNum.match(/.{1,4}/g)?.join("  ") || rawNum) : "••••  ••••  ••••  ••••"
+    const rawExpiry  = (data["تاريخ الانتهاء"] || "").toString().trim()
+    const expiry     = rawExpiry || "••/••"
+    const rawCvv     = (data["CVV"] || "").toString().trim()
+    const cvv        = rawCvv || "•••"
+    const holder     = data["اسم حامل البطاقة"] || "CARD HOLDER"
+    const cardType   = (data["نوع البطاقة"] || "CARD").toString().toUpperCase()
+    const cardLevel  = (data["مستوى البطاقة"] || "").toString().trim()
+    const bankName   = data["البنك"] || ""
+    const bankCountry = data["بلد البنك"] || ""
 
-    let brandLabel = "CARD"
-    if (typeLower.includes("visa")) brandLabel = "VISA"
-    else if (typeLower.includes("master")) brandLabel = "MASTERCARD"
-    else if (typeLower.includes("mada")) brandLabel = "MADA"
-    else if (typeLower.includes("amex") || typeLower.includes("american")) brandLabel = "AMEX"
+    const typeLower  = cardType.toLowerCase()
+    let brand = "CARD"
+    if (typeLower.includes("visa"))   brand = "VISA"
+    else if (typeLower.includes("master")) brand = "MASTERCARD"
+    else if (typeLower.includes("mada"))   brand = "MADA"
+    else if (typeLower.includes("amex") || typeLower.includes("american")) brand = "AMEX"
 
-    const brandClass =
-      brandLabel === "VISA"
-        ? "bg-blue-900/40 text-blue-100 border-blue-200/40"
-        : brandLabel === "MASTERCARD"
-        ? "bg-red-900/40 text-red-100 border-red-200/40"
-        : brandLabel === "MADA"
-        ? "bg-emerald-900/40 text-emerald-100 border-emerald-200/40"
-        : "bg-white/15 text-white border-white/30"
-    
+    const grad = CARD_GRADIENTS[color || "green"]
+
     return (
-      <div className="bg-gradient-to-b from-white to-gray-50 rounded-xl p-3 border border-gray-200 shadow-sm" style={{ fontFamily: 'Cairo, Tajawal, sans-serif' }}>
-        {/* Header - Timestamp and Title */}
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="text-right">
-            <h3 className="text-sm font-bold text-gray-800">{title}</h3>
+      <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.07)] border border-gray-100" style={{ fontFamily: "Cairo, Tajawal, sans-serif" }}>
+
+        {/* Bubble header */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            {isLatest && (
+              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">الأحدث</span>
+            )}
             {timestamp && (
-              <div className="text-[11px] text-gray-500">
-                {formatRelativeTime(timestamp)}
-              </div>
+              <span className="text-[11px] text-gray-400">{formatTimestamp(timestamp)}</span>
             )}
           </div>
-          {timestamp && (
-            <div className="text-[10px] text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded-md whitespace-nowrap">
-              {formatTimestamp(timestamp)}
-            </div>
-          )}
+          <span className="text-sm font-bold text-gray-800">{title}</span>
         </div>
 
-        {/* Credit Card */}
-        <div 
-          className={`relative bg-gradient-to-br ${colorStyles.gradient} ${colorStyles.border} border rounded-2xl shadow-lg text-white overflow-hidden mb-2 ${
-            isHorizontalLayout ? "p-3" : "p-4"
-          }`}
-          style={{ aspectRatio: isHorizontalLayout ? "2.05 / 1" : "1.78 / 1" }}
-        >
-          {/* Card Background Pattern */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-36 h-36 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
-            <div className="absolute -left-10 top-1/2 h-16 w-56 -translate-y-1/2 -rotate-12 bg-white/15 blur-xl"></div>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-black/20 via-white/0 to-white/20" />
+        <div className="p-4">
+          {/* ─── Credit Card Visual ─── */}
+          <div
+            className={`relative bg-gradient-to-br ${grad} rounded-2xl text-white overflow-hidden`}
+            style={{ aspectRatio: "1.78 / 1" }}
+          >
+            {/* Subtle pattern circles */}
+            <div className="absolute -top-8 -right-8 w-44 h-44 rounded-full bg-white/5" />
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-white/5" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-white/10" />
 
-          {/* Card Content */}
-          <div className="relative h-full flex flex-col justify-between">
-            {/* Top Section */}
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div className="w-11 h-8 rounded-md border border-amber-100/50 bg-gradient-to-br from-amber-200 to-yellow-500 shadow-inner" />
-                <div className="opacity-90">
-                  <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
-                    <path d="M2 9h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                    <path d="M1 5.5c2.2 0 4 1.8 4 4S3.2 13.5 1 13.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                    <path d="M1 2c4.1 0 7.5 3.4 7.5 7.5S5.1 17 1 17" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            {/* Card inner content */}
+            <div className="relative h-full flex flex-col px-5 py-4">
+
+              {/* Top row: chip + NFC + brand */}
+              <div className="flex items-center justify-between mb-auto">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-7 rounded-md bg-gradient-to-br from-amber-300 to-yellow-500 shadow-md border border-amber-100/40" />
+                  <svg width="18" height="18" viewBox="0 0 22 18" fill="none" opacity="0.7">
+                    <path d="M2 9h4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M1 5.5c2.2 0 4 1.8 4 4S3.2 13.5 1 13.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M1 2c4.1 0 7.5 3.4 7.5 7.5S5.1 17 1 17" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </div>
-                {icon && (
-                  <span className={`w-8 h-8 rounded-full ${colorStyles.iconBg} border border-white/30 flex items-center justify-center text-sm`}>
-                    {icon}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${brandClass}`}>
-                  {brandLabel}
+                <span className="text-[11px] font-extrabold tracking-wider opacity-90 bg-white/15 px-2.5 py-1 rounded-full border border-white/20">
+                  {brand}
                 </span>
-                {isLatest && (
-                  <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold rounded-full border border-white/30">
-                    الأحدث
-                  </span>
-                )}
               </div>
-            </div>
 
-            {/* Middle Section - Card Number */}
-            <div className="flex flex-col gap-1 my-2 sm:my-3">
-              <div className="flex items-center justify-center gap-2">
-                <div
-                  className={`font-bold tracking-[0.12em] text-center drop-shadow-sm ${
-                    isHorizontalLayout ? "text-lg sm:text-xl" : "text-xl sm:text-[1.45rem]"
-                  }`}
-                  style={{ direction: "ltr", fontFamily: "'Courier New', monospace", letterSpacing: '0.08em' }}
-                >
-                  {cardNumber}
-                </div>
+              {/* Card Number — centred */}
+              <div className="flex-1 flex items-center justify-center">
                 <button
                   type="button"
-                  onClick={() => void handleCopy("cardNumber", rawCardNumber)}
-                  disabled={!isCopyableValue(rawCardNumber)}
-                  className="rounded-md border border-white/40 bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white transition-colors hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="نسخ رقم البطاقة"
+                  onClick={() => void handleCopy("cardNumber", rawNum)}
+                  disabled={!isCopyableValue(rawNum)}
                   title="نسخ رقم البطاقة"
+                  className="group text-center"
                 >
-                  {copiedField === "cardNumber" ? "✓ تم" : "نسخ"}
+                  <div
+                    className="font-mono font-bold tracking-[0.18em] drop-shadow-sm text-xl sm:text-2xl group-hover:opacity-80 transition-opacity"
+                    style={{ direction: "ltr" }}
+                  >
+                    {cardNumber}
+                  </div>
+                  <div className="text-[10px] mt-1 opacity-0 group-hover:opacity-60 transition-opacity">
+                    {copiedField === "cardNumber" ? "✓ تم النسخ" : "انقر للنسخ"}
+                  </div>
                 </button>
               </div>
-              <div className="mt-2 rounded-lg border border-white/25 bg-white/15 px-2 py-1 text-[11px] backdrop-blur-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate font-semibold">{bankName}</span>
-                  <span className="shrink-0 text-[10px] opacity-90">
-                    {[cardType, cardLevel].filter(Boolean).join(" • ")}
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            {/* Bottom Section */}
-            <div className="grid grid-cols-3 gap-2 mt-auto items-end">
-              <div className="text-center">
-                <div className="text-[10px] opacity-70">الانتهاء</div>
-                <div className="flex items-center justify-center gap-1">
-                  <div className="font-bold text-base" style={{ direction: "ltr" }}>{expiryDate}</div>
+              {/* Bottom row: holder / expiry / cvv */}
+              <div className="flex items-end justify-between mt-auto pt-2">
+                <div>
+                  <div className="text-[10px] uppercase opacity-60 tracking-wide mb-0.5">حامل البطاقة</div>
+                  <div className="text-sm font-semibold truncate max-w-[160px] uppercase">{holder}</div>
+                </div>
+                <div className="flex gap-4 text-center">
                   <button
                     type="button"
-                    onClick={() => void handleCopy("expiryDate", rawExpiryDate)}
-                    disabled={!isCopyableValue(rawExpiryDate)}
-                    className="rounded-md border border-white/40 bg-white/20 px-1.5 py-0.5 text-[9px] font-bold text-white transition-colors hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="نسخ تاريخ الانتهاء"
+                    onClick={() => void handleCopy("expiryDate", rawExpiry)}
+                    disabled={!isCopyableValue(rawExpiry)}
                     title="نسخ تاريخ الانتهاء"
+                    className="group"
                   >
-                    {copiedField === "expiryDate" ? "✓" : "نسخ"}
+                    <div className="text-[10px] opacity-60 tracking-wide mb-0.5">الانتهاء</div>
+                    <div className="font-bold text-sm group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                      {copiedField === "expiryDate" ? "✓" : expiry}
+                    </div>
                   </button>
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-[10px] opacity-70">CVV</div>
-                <div className="flex items-center justify-center gap-1">
-                  <div className="font-bold text-base" style={{ direction: "ltr" }}>{cvv}</div>
                   <button
                     type="button"
                     onClick={() => void handleCopy("cvv", rawCvv)}
                     disabled={!isCopyableValue(rawCvv)}
-                    className="rounded-md border border-white/40 bg-white/20 px-1.5 py-0.5 text-[9px] font-bold text-white transition-colors hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-40"
-                    aria-label="نسخ CVV"
                     title="نسخ CVV"
+                    className="group"
                   >
-                    {copiedField === "cvv" ? "✓" : "نسخ"}
+                    <div className="text-[10px] opacity-60 tracking-wide mb-0.5">CVV</div>
+                    <div className="font-bold text-sm group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                      {copiedField === "cvv" ? "✓" : cvv}
+                    </div>
                   </button>
                 </div>
               </div>
-              <div className="text-left">
-                <div className="text-[10px] opacity-70">حامل البطاقة</div>
-                <div className="font-semibold text-xs truncate uppercase">
-                  {holderName}
-                </div>
-              </div>
             </div>
+          </div>
+
+          {/* ─── Tags below card ─── */}
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {bankName && bankName !== "غير محدد" && (
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">{bankName}</span>
+            )}
+            {bankCountry && bankCountry !== "غير محدد" && (
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">{bankCountry}</span>
+            )}
+            {cardType && cardType !== "CARD" && (
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">{cardType}</span>
+            )}
+            {cardLevel && (
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">{cardLevel}</span>
+            )}
           </div>
         </div>
 
-        <div className="mb-2 flex flex-wrap gap-2">
-          <span className="inline-flex items-center rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 text-xs font-semibold">
-            {bankName}
-          </span>
-          {bankCountry && (
-            <span className="inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 text-xs font-semibold">
-              {bankCountry}
-            </span>
-          )}
-          <span className="inline-flex items-center rounded-full bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 text-xs font-semibold">
-            {cardType}
-          </span>
-          {cardLevel && (
-            <span className="inline-flex items-center rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 text-xs font-semibold">
-              {cardLevel}
-            </span>
-          )}
-        </div>
-
-        {/* Footer - Status and Actions */}
-        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            {getStatusBadge()}
+        {/* ─── Footer: status + actions ─── */}
+        {(status || (showActions && actions)) && (
+          <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-gray-100 bg-gray-50/60">
+            <div>{getStatusBadge()}</div>
+            {showActions && actions && <div>{actions}</div>}
           </div>
-          {showActions && actions && (
-            <div className="w-full sm:w-auto">
-              {actions}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     )
   }
 
-  // Check if this is a numeric display (PIN, OTP only - exclude Phone)
-  const isPinOrOtp = title.includes("PIN") || title.includes("رمز") || title.includes("كلمة مرور") || title.includes("OTP") || title.includes("كود")
-  
-  // Get the main value to display in digit boxes
+  // ─────────────────────────────────────────
+  // PIN / OTP digit boxes
+  // ─────────────────────────────────────────
+  const isPinOrOtp =
+    title.includes("PIN") || title.includes("OTP") ||
+    title.includes("رمز") || title.includes("كود") || title.includes("كلمة مرور")
+
   let digitValue = ""
   if (isPinOrOtp) {
-    // Find the numeric value (usually the first or only value)
     const entries = Object.entries(data)
-    if (entries.length > 0) {
-      digitValue = entries[0][1]?.toString() || ""
-    }
+    if (entries.length > 0) digitValue = entries[0][1]?.toString() || ""
   }
 
-  // Default layout for non-card data (OTP, PIN, etc.)
-    return (
-      <div className="bg-gray-50 rounded-lg p-2 border border-gray-300" style={{ fontFamily: 'Cairo, Tajawal, sans-serif' }}>
-      {/* Header - Timestamp and Title */}
-      <div className="mb-2">
-        {timestamp && (
-          <div className="text-[10px] text-gray-500 text-right mb-0.5">
-            {formatTimestamp(timestamp)}
-          </div>
-        )}
-        <h3 className="text-sm font-bold text-gray-800 text-center">{title}</h3>
+  return (
+    <div
+      className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100"
+      style={{ fontFamily: "Cairo, Tajawal, sans-serif" }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          {isLatest && (
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">الأحدث</span>
+          )}
+          {timestamp && (
+            <span className="text-[11px] text-gray-400">{formatTimestamp(timestamp)}</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-base">{icon}</span>}
+          <span className="text-sm font-bold text-gray-800">{title}</span>
+        </div>
       </div>
 
-      {/* Content - Digit Boxes for PIN/OTP or Regular Display */}
-      {isPinOrOtp && digitValue ? (
-        <div className="flex justify-center gap-1 mb-2" style={{ direction: 'ltr' }}>
-          {digitValue.split('').map((digit, index) => (
-            <div 
-              key={index}
-              className="bg-white rounded shadow-sm flex items-center justify-center w-8 h-10"
-            >
-              <span className="text-xl font-bold text-gray-900">{digit}</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded p-2 shadow-sm mb-2">
-          <div className="space-y-2">
+      {/* Body */}
+      <div className="px-4 py-3">
+        {isPinOrOtp && digitValue ? (
+          <div className="flex justify-center gap-1.5 py-2" style={{ direction: "ltr" }}>
+            {digitValue.split("").map((digit, i) => (
+              <div
+                key={i}
+                className="w-9 h-11 rounded-lg bg-gray-50 border border-gray-200 shadow-sm flex items-center justify-center"
+              >
+                <span className="text-xl font-bold text-gray-900">{digit}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
             {Object.entries(data).map(([key, value]) => {
               if (value === undefined || value === null) return null
+              const str = value?.toString() || "-"
               return (
-                <div key={key} className="flex justify-between items-center gap-2 text-sm">
-                  <span className="font-semibold text-gray-600">{key}:</span>
-                  <span className="text-gray-900 font-bold text-right">
-                    {value?.toString() || "-"}
-                  </span>
+                <div key={key} className="flex items-start justify-between gap-4 py-2 text-sm">
+                  <span className="text-gray-500 shrink-0 text-xs">{key}</span>
+                  <span className="text-gray-900 font-semibold text-right break-all text-xs">{str}</span>
                 </div>
               )
             })}
           </div>
-        </div>
-      )}
-
-      {/* Footer - Status and Actions */}
-      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          {getStatusBadge()}
-        </div>
-        {showActions && actions && (
-          <div className="w-full sm:w-auto">
-            {actions}
-          </div>
         )}
       </div>
+
+      {/* Footer */}
+      {(status || (showActions && actions)) && (
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-gray-100 bg-gray-50/60">
+          <div>{getStatusBadge()}</div>
+          {showActions && actions && <div>{actions}</div>}
+        </div>
+      )}
     </div>
   )
 }

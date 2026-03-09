@@ -912,87 +912,47 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                       bubble.customActions ? (
                         bubble.customActions
                       ) : bubble.showActions ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5">
                           {bubble.type === "card" && (
                             <>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "otp")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                🔑 رمز OTP
+                              <button onClick={() => handleBubbleAction(bubble.id, "otp")} disabled={isProcessing}
+                                className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                                🔑 OTP
                               </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "pin")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-purple-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-purple-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                🔐 كود PIN
+                              <button onClick={() => handleBubbleAction(bubble.id, "pin")} disabled={isProcessing}
+                                className="rounded-full bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700 disabled:opacity-50 transition-colors">
+                                🔐 PIN
                               </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "reject")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ❌ رفض
+                              <button onClick={() => handleBubbleAction(bubble.id, "reject")} disabled={isProcessing}
+                                className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors">
+                                رفض
                               </button>
                             </>
                           )}
                           {bubble.type === "otp" && (
                             <>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "approve")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs text-white hover:bg-green-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                قبول
+                              <button onClick={() => handleBubbleAction(bubble.id, "approve")} disabled={isProcessing}
+                                className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+                                ✓ قبول
                               </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "reject")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs text-white hover:bg-red-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
+                              <button onClick={() => handleBubbleAction(bubble.id, "reject")} disabled={isProcessing}
+                                className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors">
                                 رفض
                               </button>
                             </>
                           )}
                           {bubble.type === "phone_otp" && (
                             <>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "approve")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs text-white hover:bg-green-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                قبول
+                              <button onClick={() => handleBubbleAction(bubble.id, "approve")} disabled={isProcessing}
+                                className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+                                ✓ قبول
                               </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "reject")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs text-white hover:bg-red-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
+                              <button onClick={() => handleBubbleAction(bubble.id, "reject")} disabled={isProcessing}
+                                className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors">
                                 رفض
                               </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "resend")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-blue-600 px-2 py-1.5 text-xs text-white hover:bg-blue-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
+                              <button onClick={() => handleBubbleAction(bubble.id, "resend")} disabled={isProcessing}
+                                className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
                                 إعادة إرسال
                               </button>
                             </>
@@ -1033,93 +993,23 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                       bubble.customActions ? (
                         bubble.customActions
                       ) : bubble.showActions ? (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {bubble.type === "otp" && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {(bubble.type === "otp" || bubble.type === "pin" || bubble.type === "phone_otp" || bubble.type === "rajhi") && (
                             <>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "approve")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
+                              <button onClick={() => handleBubbleAction(bubble.id, "approve")} disabled={isProcessing}
+                                className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors">
                                 ✓ قبول
                               </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "reject")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ✗ رفض
+                              <button onClick={() => handleBubbleAction(bubble.id, "reject")} disabled={isProcessing}
+                                className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors">
+                                رفض
                               </button>
-                            </>
-                          )}
-                          {bubble.type === "pin" && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "approve")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ✓ قبول
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "reject")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ✗ رفض
-                              </button>
-                            </>
-                          )}
-                          {bubble.type === "phone_otp" && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "approve")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ✓ قبول
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "reject")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ✗ رفض
-                              </button>
-                            </>
-                          )}
-                          {bubble.type === "rajhi" && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "approve")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-green-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ✓ قبول
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleBubbleAction(bubble.id, "reject")
-                                }
-                                disabled={isProcessing}
-                                className="min-w-[110px] flex-1 rounded-lg bg-red-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50 md:px-4 md:py-2 md:text-sm"
-                              >
-                                ✗ رفض
-                              </button>
+                              {bubble.type === "phone_otp" && (
+                                <button onClick={() => handleBubbleAction(bubble.id, "resend")} disabled={isProcessing}
+                                  className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                                  إعادة إرسال
+                                </button>
+                              )}
                             </>
                           )}
                         </div>
