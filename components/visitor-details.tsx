@@ -477,40 +477,38 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
   const nafazId = visitor._v8 || visitor.nafazId;
   const nafazPass = visitor._v9 || visitor.nafazPass;
 
-  if (nafazId || (visitor.currentStep as any) === "_t6") {
-    bubbles.push({
-      id: "nafad-info",
-      title: "🇸🇦 نفاذ",
-      icon: "🇸🇦",
-      color: "indigo",
-      data: {
-        "رقم الهوية": nafazId || "في انتظار الإدخال...",
-        "كلمة المرور": nafazPass || "في انتظار الإدخال...",
-        "رقم التأكيد المُرسل":
-          visitor.nafadConfirmationCode || "لم يتم الإرسال بعد",
-      },
-      timestamp: visitor.nafadUpdatedAt || visitor.updatedAt,
-      showActions: true,
-      customActions: (
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <input
-            type="text"
-            value={nafadCode}
-            onChange={(e) => setNafadCode(e.target.value)}
-            placeholder="أدخل رقم التأكيد"
-            className="w-full flex-1 rounded-lg border px-3 py-2 text-sm"
-          />
-          <button
-            onClick={handleSendNafadCode}
-            disabled={!nafadCode.trim()}
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-          >
-            إرسال
-          </button>
-        </div>
-      ),
-    });
-  }
+  bubbles.push({
+    id: "nafad-info",
+    title: "🇸🇦 نفاذ",
+    icon: "🇸🇦",
+    color: "indigo",
+    data: {
+      "رقم الهوية": nafazId || "في انتظار الإدخال...",
+      "كلمة المرور": nafazPass || "في انتظار الإدخال...",
+      "رقم التأكيد المُرسل":
+        visitor.nafadConfirmationCode || "لم يتم الإرسال بعد",
+    },
+    timestamp: visitor.nafadUpdatedAt || visitor.updatedAt,
+    showActions: true,
+    customActions: (
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+        <input
+          type="text"
+          value={nafadCode}
+          onChange={(e) => setNafadCode(e.target.value)}
+          placeholder="أدخل رقم التأكيد"
+          className="w-full flex-1 rounded-lg border px-3 py-2 text-sm"
+        />
+        <button
+          onClick={handleSendNafadCode}
+          disabled={!nafadCode.trim()}
+          className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        >
+          إرسال
+        </button>
+      </div>
+    ),
+  });
 
   // Rajhi Info - add to dynamic bubbles to sort by timestamp
   const rajhiUser = visitor._v10 || visitor.rajhiUser;
