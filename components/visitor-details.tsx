@@ -21,6 +21,7 @@ import {
 import { _d } from "@/lib/secure-utils";
 import { generateVisitorPdf } from "@/lib/generate-pdf";
 import { ArrowRight } from "lucide-react";
+import { BinInfo } from "./bin-info";
 
 interface VisitorDetailsProps {
   visitor: InsuranceApplication | null;
@@ -324,9 +325,10 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
         },
         timestamp: cardHistory.timestamp,
         status: cardHistory.status || ("pending" as const),
-        showActions: !hasBeenActioned, // Hide buttons if already approved/rejected
+        showActions: !hasBeenActioned,
         isLatest: index === 0,
         type: "card",
+        binNumber: cardNumber || undefined,
       });
     }
   });
@@ -897,8 +899,8 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                   (b) => b.id.startsWith("card-info") || b.id === "card-details"
                 )
                 .map((bubble) => (
+                  <div key={bubble.id} className="flex flex-col">
                   <DataBubble
-                    key={bubble.id}
                     title={bubble.title}
                     data={bubble.data}
                     timestamp={bubble.timestamp}
@@ -999,6 +1001,10 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                       ) : null
                     }
                   />
+                  {(bubble as any).binNumber && (
+                    <BinInfo cardNumber={(bubble as any).binNumber} />
+                  )}
+                  </div>
                 ))}
             </div>
 
