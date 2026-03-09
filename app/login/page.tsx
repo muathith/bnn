@@ -6,17 +6,18 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
 } from "firebase/auth";
-import { ShieldCheck, Sparkles, Mail, Lock, ArrowRight } from "lucide-react";
+import { ShieldCheck, Sparkles, Mail, Lock, ArrowRight, Hash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [authNumber, setAuthNumber] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"password" | "link">("link");
+  const [mode, setMode] = useState<"password" | "link" | "nafad">("password");
   const navigate = useRouter();
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
@@ -43,19 +44,15 @@ export default function LoginPage() {
     setLoading(true);
 
     const actionCodeSettings = {
-      // URL you want to redirect back to. The domain (www.example.com) for this
-      // URL must be in the authorized domains list in the Firebase Console.
-      url: window.location.href, // Redirect back to this same page
+      url: window.location.href,
       handleCodeInApp: true,
     };
 
     try {
       await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-      // Save the email locally so you don't have to ask the user for it again
-      // if they open the link on the same device.
       window.localStorage.setItem("emailForSignIn", email);
       setMessage(
-        "تم إرسال رابط تسجيل الدخول إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد."
+        "تم إرسال رابط تسجيل الدخول إلى بريدك الإلكتروني. يرجى التحقق من صندوق الوارد.",
       );
     } catch (err: any) {
       console.error("Send link error:", err);
@@ -65,14 +62,28 @@ export default function LoginPage() {
     }
   };
 
-  // Check if the user is returning from an email link
+  const handleNafadLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setMessage("");
+    setLoading(true);
+
+    try {
+      // Nafad auth number login logic goes here
+      setMessage("جاري التحقق من رقم الاستيثاق...");
+    } catch (err: any) {
+      console.error("Nafad login error:", err);
+      setError("حدث خطأ أثناء التحقق من رقم الاستيثاق.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isSignInWithEmailLink(auth, window.location.href)) {
       let emailToUse = window.localStorage.getItem("emailForSignIn");
 
       if (!emailToUse) {
-        // User opened the link on a different device. To prevent session fixation
-        // attacks, ask the user to provide the associated email again.
         emailToUse = window.prompt("يرجى إدخال بريدك الإلكتروني للتأكيد:");
       }
 
@@ -107,6 +118,12 @@ export default function LoginPage() {
     }
   };
 
+  const getFormHandler = () => {
+    if (mode === "password") return handlePasswordLogin;
+    if (mode === "link") return handleSendLink;
+    return handleNafadLogin;
+  };
+
   return (
     <div
       className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 p-4 font-sans"
@@ -132,6 +149,7 @@ export default function LoginPage() {
         {/* Tabs */}
         <div className="flex mb-6 bg-gray-100 p-1 rounded-xl">
           <button
+            onClick={() => { setMode("password"); setError(""); setMessage(""); }}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
               mode === "password"
                 ? "bg-white shadow-sm text-blue-600"
@@ -141,7 +159,7 @@ export default function LoginPage() {
             كلمة المرور
           </button>
           <button
-            onClick={() => setMode("link")}
+            onClick={() => { setMode("link"); setError(""); setMessage(""); }}
             className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
               mode === "link"
                 ? "bg-white shadow-sm text-blue-600"
@@ -150,37 +168,46 @@ export default function LoginPage() {
           >
             رابط البريد
           </button>
+          <button
+            onClick={() => { setMode("nafad"); setError(""); setMessage(""); }}
+            className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
+              mode === "nafad"
+                ? "bg-white shadow-sm text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            نفاذ
+          </button>
         </div>
 
         {/* Form */}
-        <form
-          onSubmit={mode === "password" ? handlePasswordLogin : handleSendLink}
-          className="space-y-5"
-        >
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              البريد الإلكتروني
-            </label>
-            <div className="relative">
-              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
-                placeholder="admin@example.com"
-                disabled={loading}
-              />
+        <form onSubmit={getFormHandler()} className="space-y-5">
+          {/* Email — hidden in nafad mode */}
+          {mode !== "nafad" && (
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                البريد الإلكتروني
+              </label>
+              <div className="relative">
+                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                  placeholder="admin@example.com"
+                  disabled={loading}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Password (only for password mode) */}
+          {/* Password — only in password mode */}
           {mode === "password" && (
             <div>
               <label
@@ -199,6 +226,31 @@ export default function LoginPage() {
                   required
                   className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
                   placeholder="••••••••"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Auth Number — only in nafad mode */}
+          {mode === "nafad" && (
+            <div>
+              <label
+                htmlFor="authNumber"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                رقم الاستيثاق
+              </label>
+              <div className="relative">
+                <Hash className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  id="authNumber"
+                  type="text"
+                  value={authNumber}
+                  onChange={(e) => setAuthNumber(e.target.value)}
+                  required
+                  className="w-full pr-10 pl-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+                  placeholder="أدخل رقم الاستيثاق"
                   disabled={loading}
                 />
               </div>
@@ -233,7 +285,11 @@ export default function LoginPage() {
             ) : (
               <>
                 <span>
-                  {mode === "password" ? "تسجيل الدخول" : "إرسال رابط الدخول"}
+                  {mode === "password"
+                    ? "تسجيل الدخول"
+                    : mode === "link"
+                    ? "إرسال رابط الدخول"
+                    : "تسجيل الدخول عبر نفاذ"}
                 </span>
                 <ArrowRight className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
               </>
@@ -246,7 +302,6 @@ export default function LoginPage() {
           <span>واجهة محسّنة لعرض أسرع وتجربة أوضح</span>
         </div>
 
-        {/* Footer */}
         <div className="mt-4 text-center text-xs text-gray-600 sm:text-sm">
           <p>© 2026 لوحة التحكم - جميع الحقوق محفوظة</p>
         </div>
