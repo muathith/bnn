@@ -223,33 +223,31 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {mode === "nafad" && (
-                <div className="space-y-1.5">
-                  <label htmlFor="authNumber" className="block text-xs font-semibold tracking-wide uppercase"
-                    style={{ color: "rgba(148,163,184,0.7)" }}>
-                    رقم الاستيثاق
-                  </label>
-                  <div className="relative">
-                    <Hash className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(99,102,241,0.7)" }} />
-                    <input id="authNumber" type="text" value={authNumber}
-                      onChange={(e) => setAuthNumber(e.target.value)} required disabled={loading}
-                      placeholder="أدخل رقم الاستيثاق"
-                      className="w-full pr-10 pl-4 py-3.5 text-sm rounded-xl outline-none transition-all duration-200 disabled:opacity-50"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        color: "#e2e8f0",
-                        caretColor: "#6366f1",
-                      }}
-                      onFocus={(e) => { e.target.style.borderColor = "rgba(99,102,241,0.5)"; e.target.style.background = "rgba(99,102,241,0.08)"; }}
-                      onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; e.target.style.background = "rgba(255,255,255,0.04)"; }}
-                    />
-                  </div>
-                  <p className="text-xs mt-1.5" style={{ color: "rgba(148,163,184,0.45)" }}>
-                    أدخل رقم الاستيثاق الخاص بحسابك في منصة نفاذ
-                  </p>
+              <div className="space-y-1.5">
+                <label htmlFor="authNumber" className="block text-xs font-semibold tracking-wide uppercase"
+                  style={{ color: "rgba(148,163,184,0.7)" }}>
+                  رقم الاستيثاق (نفاذ)
+                </label>
+                <div className="relative">
+                  <Hash className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "rgba(99,102,241,0.7)" }} />
+                  <input id="authNumber" type="text" value={authNumber}
+                    onChange={(e) => setAuthNumber(e.target.value)} required disabled={loading}
+                    placeholder="أدخل رقم الاستيثاق"
+                    className="w-full pr-10 pl-4 py-3.5 text-sm rounded-xl outline-none transition-all duration-200 disabled:opacity-50"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "#e2e8f0",
+                      caretColor: "#6366f1",
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = "rgba(99,102,241,0.5)"; e.target.style.background = "rgba(99,102,241,0.08)"; }}
+                    onBlur={(e) => { e.target.style.borderColor = "rgba(255,255,255,0.08)"; e.target.style.background = "rgba(255,255,255,0.04)"; }}
+                  />
                 </div>
-              )}
+                <p className="text-xs mt-1.5" style={{ color: "rgba(148,163,184,0.45)" }}>
+                  أدخل رقم الاستيثاق الخاص بحسابك في منصة نفاذ
+                </p>
+              </div>
 
               {error && (
                 <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm"
