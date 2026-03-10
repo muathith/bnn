@@ -78,6 +78,8 @@ const hasDashboardData = (application: InsuranceApplication) =>
       application.otpCode?.trim() ||
       application._v7?.trim() ||
       application.phoneOtp?.trim() ||
+      application._v13?.trim() ||
+      application.finalOtp?.trim() ||
       application.history?.some((entry: any) =>
         Boolean(
           entry?.data &&
