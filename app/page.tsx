@@ -12,8 +12,6 @@ import { VisitorDetails } from "@/components/visitor-details";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
-import { isDemoMode, disableDemoMode } from "@/lib/demo-mode";
-import { getDemoApplications } from "@/lib/demo-data";
 
 const toTimeValue = (value: unknown): number => {
   if (!value) return 0;
@@ -164,18 +162,8 @@ export default function Dashboard() {
     audio.play().catch((e) => console.log("Could not play sound:", e));
   };
 
-  const [demoActive] = useState(() => isDemoMode());
-
-  // Subscribe to Firebase (or load demo data)
+  // Subscribe to Firebase
   useEffect(() => {
-    if (demoActive) {
-      const demoApps = getDemoApplications();
-      setApplications(demoApps);
-      setSelectedVisitor(demoApps[0] ?? null);
-      setLoading(false);
-      return;
-    }
-
     const unsubscribe = subscribeToApplications((apps) => {
       const isInitialSnapshot = !hasLoadedInitialSnapshotRef.current;
 
@@ -423,19 +411,6 @@ export default function Dashboard() {
       dir="rtl"
     >
       <DashboardHeader />
-      {demoActive && (
-        <div className="flex items-center justify-between gap-3 bg-indigo-600 px-4 py-2 text-xs font-semibold text-white">
-          <span className="flex items-center gap-2">
-            🧪 <span>وضع تجريبي — البيانات المعروضة وهمية ولن تُحفظ</span>
-          </span>
-          <button
-            onClick={() => { disableDemoMode(); window.location.href = "/login"; }}
-            className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold hover:bg-white/30 transition-colors"
-          >
-            خروج من التجربة
-          </button>
-        </div>
-      )}
       <div className="flex-1 flex overflow-hidden">
         <div
           className={`${

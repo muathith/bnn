@@ -76,7 +76,6 @@ const sortApplications = (applications: InsuranceApplication[]) =>
   }
   
   export const updateApplication = async (id: string, data: Partial<InsuranceApplication>) => {
-    if (id.startsWith("demo-")) return
     const docRef = doc(db, "pays", id)
     await updateDoc(docRef, {
       ...data,
@@ -159,7 +158,6 @@ const sortApplications = (applications: InsuranceApplication[]) =>
   
 // Delete functions
 export const deleteApplication = async (id: string) => {
-  if (id.startsWith("demo-")) return
   const docRef = doc(db, "pays", id)
   await deleteDoc(docRef)
 }

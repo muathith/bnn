@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { User, onAuthStateChanged } from "firebase/auth"
 import { auth } from "./firebase"
 import { useRouter, usePathname } from "next/navigation"
-import { isDemoMode } from "./demo-mode"
 
 interface AuthContextType {
   user: User | null
@@ -25,13 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (isDemoMode()) {
-      setUser({ uid: "demo-user", email: "demo@bcare.sa" } as any)
-      setLoading(false)
-      if (pathname === "/login") router.push("/")
-      return
-    }
-
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user)
       setLoading(false)
@@ -49,12 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      if (isDemoMode()) {
-        const { disableDemoMode } = await import("./demo-mode")
-        disableDemoMode()
-        router.push("/login")
-        return
-      }
       await auth.signOut()
       router.push("/login")
     } catch (error) {

@@ -11,11 +11,9 @@ import {
   AlertCircle,
   CheckCircle2,
   ArrowLeft,
-  FlaskConical,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
-import { enableDemoMode } from "@/lib/demo-mode";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -210,36 +208,8 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Demo Mode */}
-            <div className="mt-5">
-              <div className="relative flex items-center justify-center mb-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }} />
-                </div>
-                <span className="relative px-3 text-xs" style={{ color: "rgba(100,116,139,0.5)", background: "rgba(13,20,44,0.85)" }}>
-                  أو
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => { enableDemoMode(); navigate.push("/"); }}
-                className="w-full py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 hover:opacity-90"
-                style={{
-                  background: "rgba(99,102,241,0.08)",
-                  border: "1px solid rgba(99,102,241,0.2)",
-                  color: "rgba(165,180,252,0.9)",
-                }}
-              >
-                <FlaskConical className="w-4 h-4" />
-                تجربة النظام (وضع تجريبي)
-              </button>
-              <p className="mt-2 text-center text-[11px]" style={{ color: "rgba(100,116,139,0.5)" }}>
-                بيانات وهمية — لا يتطلب تسجيل دخول
-              </p>
-            </div>
-
             {/* Footer */}
-            <div className="mt-6 pt-5 text-center" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+            <div className="mt-8 pt-6 text-center" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
               <p className="text-xs" style={{ color: "rgba(100,116,139,0.7)" }}>
                 © 2026 BCare — جميع الحقوق محفوظة
               </p>
