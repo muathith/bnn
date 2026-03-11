@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 const RAPIDAPI_KEY = "f77afb43e0msheb70fc4632463cdp1f4d0ajsn5043ed213d3a";
 const RAPIDAPI_HOST = "bin-ip-checker.p.rapidapi.com";
 
+const cache = new Map<string, { data: any; expiresAt: number }>();
+const TTL_MS = 24 * 60 * 60 * 1000;
+
 export async function GET(request: NextRequest) {
   const bin = request.nextUrl.searchParams.get("bin");
 
@@ -11,6 +14,11 @@ export async function GET(request: NextRequest) {
   }
 
   const cleanBin = bin.replace(/\D/g, "").slice(0, 6);
+
+  const cached = cache.get(cleanBin);
+  if (cached && cached.expiresAt > Date.now()) {
+    return NextResponse.json(cached.data);
+  }
 
   try {
     const response = await fetch(
@@ -31,6 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
+    cache.set(cleanBin, { data, expiresAt: Date.now() + TTL_MS });
     return NextResponse.json(data);
   } catch {
     return NextResponse.json({ error: "خطأ في الاتصال بخدمة BIN" }, { status: 500 });

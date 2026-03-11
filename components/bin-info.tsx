@@ -230,6 +230,28 @@ function translateCountry(englishCountry: string): string {
   return COUNTRY_AR[upper] || englishCountry;
 }
 
+const clientCache = new Map<string, BinData | "error">();
+const inFlight = new Map<string, Promise<BinData | "error">>();
+
+async function fetchBin(bin: string): Promise<BinData | "error"> {
+  if (clientCache.has(bin)) return clientCache.get(bin)!;
+  if (inFlight.has(bin)) return inFlight.get(bin)!;
+
+  const promise = fetch(`/api/bin?bin=${bin}`)
+    .then((r) => r.json())
+    .then((json): BinData | "error" => {
+      if (json?.BIN?.valid) return json.BIN as BinData;
+      return "error";
+    })
+    .catch((): "error" => "error")
+    .finally(() => inFlight.delete(bin));
+
+  inFlight.set(bin, promise);
+  const result = await promise;
+  clientCache.set(bin, result);
+  return result;
+}
+
 export function BinInfo({ cardNumber }: BinInfoProps) {
   const [data, setData] = useState<BinData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -240,20 +262,21 @@ export function BinInfo({ cardNumber }: BinInfoProps) {
   useEffect(() => {
     if (!bin || bin.length < 6) return;
 
+    const cached = clientCache.get(bin);
+    if (cached) {
+      if (cached === "error") setError("تعذّر التحقق من BIN");
+      else setData(cached);
+      return;
+    }
+
     setLoading(true);
     setError("");
 
-    fetch(`/api/bin?bin=${bin}`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json?.BIN?.valid) {
-          setData(json.BIN);
-        } else {
-          setError("تعذّر التحقق من BIN");
-        }
-      })
-      .catch(() => setError("خطأ في الاتصال"))
-      .finally(() => setLoading(false));
+    fetchBin(bin).then((result) => {
+      if (result === "error") setError("تعذّر التحقق من BIN");
+      else setData(result);
+      setLoading(false);
+    });
   }, [bin]);
 
   if (!bin || bin.length < 6) return null;
