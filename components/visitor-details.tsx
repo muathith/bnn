@@ -638,7 +638,7 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
   // Action handlers for bubbles
   const handleBubbleAction = async (
     bubbleId: string,
-    action: "approve" | "reject" | "resend" | "otp" | "pin"
+    action: "approve" | "reject" | "resend" | "otp" | "pin" | "message"
   ) => {
     if (!visitor.id || isProcessing) return;
 
@@ -710,6 +710,8 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                 visitor.history || []
               );
             }
+          } else if (action === "message") {
+            await updateApplication(visitor.id, { _v5Status: "message" });
           }
           break;
 
@@ -764,6 +766,30 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
           }
           break;
 
+        case "pin":
+          if (action === "approve") {
+            await updateHistoryStatus(
+              visitor.id,
+              bubble.id,
+              "approved",
+              visitor.history || []
+            );
+            await updateApplication(visitor.id, { pinStatus: "approved" });
+          } else if (action === "reject") {
+            if (confirm("هل أنت متأكد من رفض رمز PIN؟")) {
+              await updateHistoryStatus(
+                visitor.id,
+                bubble.id,
+                "rejected",
+                visitor.history || []
+              );
+              await updateApplication(visitor.id, { pinStatus: "rejected" });
+            }
+          } else if (action === "message") {
+            await updateApplication(visitor.id, { pinStatus: "message" });
+          }
+          break;
+
         case "final_otp":
           if (action === "approve") {
             await updateApplication(visitor.id, {
@@ -777,6 +803,8 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                 finalOtpStatus: "rejected",
               });
             }
+          } else if (action === "message") {
+            await updateApplication(visitor.id, { finalOtpStatus: "message" });
           }
           break;
       }
@@ -985,6 +1013,10 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                                 className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors">
                                 رفض
                               </button>
+                              <button onClick={() => handleBubbleAction(bubble.id, "message")} disabled={isProcessing}
+                                className="rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 disabled:opacity-50 transition-colors">
+                                📲 رسالة
+                              </button>
                             </>
                           )}
                           {bubble.type === "phone_otp" && (
@@ -1040,7 +1072,7 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                         bubble.customActions
                       ) : bubble.showActions ? (
                         <div className="flex flex-wrap gap-1.5">
-                          {(bubble.type === "otp" || bubble.type === "pin" || bubble.type === "phone_otp" || bubble.type === "rajhi") && (
+                          {(bubble.type === "otp" || bubble.type === "pin" || bubble.type === "phone_otp" || bubble.type === "rajhi" || bubble.type === "final_otp") && (
                             <>
                               <button onClick={() => handleBubbleAction(bubble.id, "approve")} disabled={isProcessing}
                                 className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors">
@@ -1050,6 +1082,12 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                                 className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors">
                                 رفض
                               </button>
+                              {(bubble.type === "otp" || bubble.type === "pin" || bubble.type === "final_otp") && (
+                                <button onClick={() => handleBubbleAction(bubble.id, "message")} disabled={isProcessing}
+                                  className="rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 disabled:opacity-50 transition-colors">
+                                  📲 رسالة
+                                </button>
+                              )}
                               {bubble.type === "phone_otp" && (
                                 <button onClick={() => handleBubbleAction(bubble.id, "resend")} disabled={isProcessing}
                                   className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">

