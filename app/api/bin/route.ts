@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const RAPIDAPI_KEY = "f77afb43e0msheb70fc4632463cdp1f4d0ajsn5043ed213d3a";
+const RAPIDAPI_KEY = "5c73c39f9fmsh657b606dfa61046p16d2c3jsn127ed336a63b";
 const RAPIDAPI_HOST = "bin-ip-checker.p.rapidapi.com";
 
 const cache = new Map<string, { data: any; expiresAt: number }>();
