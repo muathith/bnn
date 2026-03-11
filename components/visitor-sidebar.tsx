@@ -225,7 +225,7 @@ export function VisitorSidebar({
             غير مقروء: {unreadCount}
           </span>
           <span className="text-xs font-semibold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
-            قيد الانتظار: {waitingCount}
+            قيد المراجعة: {waitingCount}
           </span>
         </div>
 
