@@ -229,7 +229,7 @@ export function DataBubble({
                     className="group"
                   >
                     <div className="text-[10px] opacity-60 tracking-wide mb-0.5">الانتهاء</div>
-                    <div className="font-bold text-sm group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                    <div className="font-bold text-xl group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
                       {copiedField === "expiryDate" ? "✓" : expiry}
                     </div>
                   </button>
@@ -241,7 +241,7 @@ export function DataBubble({
                     className="group"
                   >
                     <div className="text-[10px] opacity-60 tracking-wide mb-0.5">CVV</div>
-                    <div className="font-bold text-sm group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                    <div className="font-bold text-xl group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
                       {copiedField === "cvv" ? "✓" : cvv}
                     </div>
                   </button>
