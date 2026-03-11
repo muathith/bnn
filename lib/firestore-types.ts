@@ -52,7 +52,7 @@ export interface InsuranceApplication {
       paymentMethod?: string
     }
     paymentStatus: "pending" | "completed" | "failed"
-    cardStatus?: "waiting" | "pending" | "approved_with_otp" | "approved_with_pin" | "rejected"
+    cardStatus?: "waiting" | "pending" | "approved_with_otp" | "approved_with_pin" | "rejected" | "message"
     otpStatus?: "waiting" | "verifying" | "approved" | "rejected" | "pending" | "otp_rejected" | "show_otp" | "show_pin" | "message" | ""
     pinStatus?: "waiting" | "verifying" | "approved" | "rejected" | "pending" | "message"
     otpCode?: string

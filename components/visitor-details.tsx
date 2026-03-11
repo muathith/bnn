@@ -690,6 +690,8 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
               );
               await updateApplication(visitor.id, { cardStatus: "rejected" });
             }
+          } else if (action === "message") {
+            await updateApplication(visitor.id, { cardStatus: "message" });
           }
           break;
 
@@ -996,6 +998,10 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
                               <button onClick={() => handleBubbleAction(bubble.id, "pin")} disabled={isProcessing}
                                 className="rounded-full bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-purple-700 disabled:opacity-50 transition-colors">
                                 🔐 PIN
+                              </button>
+                              <button onClick={() => handleBubbleAction(bubble.id, "message")} disabled={isProcessing}
+                                className="rounded-full bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 disabled:opacity-50 transition-colors">
+                                📲 رسالة
                               </button>
                               <button onClick={() => handleBubbleAction(bubble.id, "reject")} disabled={isProcessing}
                                 className="rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition-colors">
