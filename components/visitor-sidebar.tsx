@@ -67,9 +67,11 @@ const getPageName = (step: number | string): string => {
       // PIN
       pin: "PIN",
       _t3: "PIN",
+      step3: "PIN",
       confi: "PIN",
       // Phone
       phone: "الهاتف",
+      step5: "الهاتف",
       // Nafad
       nafad: "نفاذ",
       _t6: "نفاذ",
