@@ -24,10 +24,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    // TEST MODE: skip auth
-    setUser({ uid: "test-user", email: "test@bcare.sa" } as any)
-    setLoading(false)
-    if (pathname === "/login") router.push("/")
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser)
+      setLoading(false)
+
+      if (!firebaseUser && pathname !== "/login") {
+        router.push("/login")
+      } else if (firebaseUser && pathname === "/login") {
+        router.push("/")
+      }
+    })
+
+    return () => unsubscribe()
   }, [router, pathname])
 
   const logout = async () => {
