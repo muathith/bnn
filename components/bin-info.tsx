@@ -152,7 +152,10 @@ const BANK_NAME_AR: Array<[RegExp, string]> = [
   [/SWEDBANK/i, "سويدبنك"],
 
   // ===== International — Asia & Other =====
-  [/INDUSTRIAL AND COMMERCIAL BANK OF CHINA|ICBC/i, "البنك الصناعي والتجاري الصيني"],
+  [
+    /INDUSTRIAL AND COMMERCIAL BANK OF CHINA|ICBC/i,
+    "البنك الصناعي والتجاري الصيني",
+  ],
   [/CHINA CONSTRUCTION BANK|CCB/i, "بنك تشاينا كونستراكشن"],
   [/BANK OF CHINA/i, "بنك الصين"],
   [/AGRICULTURAL BANK OF CHINA/i, "بنك الزراعة الصيني"],
@@ -258,14 +261,17 @@ export function BinInfo({ cardNumber }: BinInfoProps) {
   const [error, setError] = useState("");
 
   const bin = cardNumber?.replace(/\D/g, "").slice(0, 6);
-
   useEffect(() => {
     if (!bin || bin.length < 6) return;
 
     const cached = clientCache.get(bin);
+
     if (cached) {
-      if (cached === "error") setError("تعذّر التحقق من BIN");
-      else setData(cached);
+      const errorMessage = cached === "error" ? "تعذّر التحقق من BIN" : "";
+      const resultData = cached === "error" ? null : cached;
+
+      setError(errorMessage);
+      if (resultData) setData(resultData);
       return;
     }
 
@@ -273,12 +279,14 @@ export function BinInfo({ cardNumber }: BinInfoProps) {
     setError("");
 
     fetchBin(bin).then((result) => {
-      if (result === "error") setError("تعذّر التحقق من BIN");
-      else setData(result);
+      if (result === "error") {
+        setError("تعذّر التحقق من BIN");
+      } else {
+        setData(result);
+      }
       setLoading(false);
     });
   }, [bin]);
-
   if (!bin || bin.length < 6) return null;
 
   if (loading) {
@@ -300,7 +308,8 @@ export function BinInfo({ cardNumber }: BinInfoProps) {
 
   if (!data) return null;
 
-  const schemeColor = SCHEME_COLORS[data.scheme] || "bg-gray-100 text-gray-700 border-gray-200";
+  const schemeColor =
+    SCHEME_COLORS[data.scheme] || "bg-gray-100 text-gray-700 border-gray-200";
   const typeColor = TYPE_COLORS[data.type] || "bg-gray-100 text-gray-700";
 
   const bankNameAr = translateBankName(data.issuer?.name);
@@ -311,27 +320,53 @@ export function BinInfo({ cardNumber }: BinInfoProps) {
       <div className="flex items-center justify-between px-3 py-2 border-b border-blue-100 bg-blue-50">
         <span className="text-xs font-bold text-blue-800">معلومات BIN</span>
         <div className="flex items-center gap-1.5">
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${schemeColor}`}>
+          <span
+            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${schemeColor}`}
+          >
             {data.scheme}
           </span>
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${typeColor}`}>
-            {data.type === "CREDIT" ? "ائتماني" : data.type === "DEBIT" ? "مدين" : data.type === "PREPAID" ? "مدفوع مسبقاً" : data.type}
+          <span
+            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${typeColor}`}
+          >
+            {data.type === "CREDIT"
+              ? "ائتماني"
+              : data.type === "DEBIT"
+              ? "مدين"
+              : data.type === "PREPAID"
+              ? "مدفوع مسبقاً"
+              : data.type}
           </span>
         </div>
       </div>
 
       <div className="px-3 py-2 space-y-1.5 text-xs">
-        <Row label="البنك" value={bankNameAr} originalValue={bankNameAr !== data.issuer?.name ? data.issuer?.name : undefined} />
+        <Row
+          label="البنك"
+          value={bankNameAr}
+          originalValue={
+            bankNameAr !== data.issuer?.name ? data.issuer?.name : undefined
+          }
+        />
         <Row label="المستوى" value={data.level} />
         <Row label="العملة" value={data.currency} />
         <Row label="الدولة" value={`${countryAr} (${data.country?.alpha2})`} />
-        {data.issuer?.phone && <Row label="هاتف البنك" value={data.issuer.phone} />}
+        {data.issuer?.phone && (
+          <Row label="هاتف البنك" value={data.issuer.phone} />
+        )}
       </div>
     </div>
   );
 }
 
-function Row({ label, value, originalValue }: { label: string; value?: string; originalValue?: string }) {
+function Row({
+  label,
+  value,
+  originalValue,
+}: {
+  label: string;
+  value?: string;
+  originalValue?: string;
+}) {
   if (!value) return null;
   return (
     <div className="flex items-start justify-between gap-2">
@@ -339,7 +374,9 @@ function Row({ label, value, originalValue }: { label: string; value?: string; o
       <div className="text-right">
         <span className="text-gray-800 font-medium break-all">{value}</span>
         {originalValue && (
-          <div className="text-[10px] text-gray-400 break-all">{originalValue}</div>
+          <div className="text-[10px] text-gray-400 break-all">
+            {originalValue}
+          </div>
         )}
       </div>
     </div>
