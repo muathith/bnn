@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
-import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -23,7 +22,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const navigate = useRouter();
-  const { loginAsDemo } = useAuth();
 
   const handleSendLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,33 +176,6 @@ export default function LoginPage() {
                       <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                     </span>
                   )}
-                </button>
-                <div className="flex items-center gap-3 my-2">
-                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-                  <span className="text-xs" style={{ color: "rgba(148,163,184,0.35)" }}>أو</span>
-                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={loginAsDemo}
-                  disabled={loading}
-                  className="w-full py-3 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "rgba(148,163,184,0.8)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)";
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.14)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.08)";
-                  }}
-                >
-                  🧪 دخول تجريبي
                 </button>
               </form>
             ) : (
