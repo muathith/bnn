@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { SettingsModal } from "@/components/settings-modal"
-import { Settings } from "lucide-react"
+import { Settings, FileDown } from "lucide-react"
 
 interface AnalyticsData {
   activeUsers: number
@@ -14,7 +14,12 @@ interface AnalyticsData {
   countries: Array<{ country: string; users: number }>
 }
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  onExportAllCards?: () => void
+  isExportingAllCards?: boolean
+}
+
+export function DashboardHeader({ onExportAllCards, isExportingAllCards }: DashboardHeaderProps = {}) {
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     activeUsers: 0,
     todayVisitors: 0,
@@ -67,8 +72,31 @@ export function DashboardHeader() {
             <p className="hidden sm:block text-xs landscape:text-[10px] md:text-sm text-gray-600 landscape:hidden md:block">إدارة زوار BCare</p>
           </div>
 
-          {/* Settings */}
-          <div className="flex items-center gap-2 md:gap-4">
+          {/* Actions */}
+          <div className="flex items-center gap-2 md:gap-3">
+            {onExportAllCards && (
+              <button
+                onClick={onExportAllCards}
+                disabled={isExportingAllCards}
+                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-xs md:text-sm font-semibold transition-colors whitespace-nowrap"
+                title="تصدير جميع البطاقات PDF"
+              >
+                {isExportingAllCards ? (
+                  <>
+                    <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    جاري التصدير...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                    تصدير الكل PDF
+                  </>
+                )}
+              </button>
+            )}
             <button
               onClick={() => setShowSettings(true)}
               className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors"

