@@ -187,33 +187,8 @@ export function DataBubble({
             {/* Card inner content */}
             <div className="relative h-full flex flex-col px-5 py-4">
 
-              {/* Top row: bank logo + SAR badge */}
-              <div className="flex items-start justify-between">
-                {bankLogoUrl ? (
-                  <div
-                    style={{
-                      background: "#fff",
-                      borderRadius: "8px",
-                      padding: "3px 8px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.08)"
-                    }}
-                  >
-                    <img
-                      src={bankLogoUrl}
-                      alt={bankName}
-                      className="h-7 max-w-[120px] object-contain"
-                    />
-                  </div>
-                ) : (
-                  <span
-                    className="font-extrabold text-green-900 leading-tight"
-                    style={{ fontSize: "15px", direction: "ltr", maxWidth: "160px" }}
-                  >
-                    {bankName && bankName !== "غير محدد" ? bankName : ""}
-                  </span>
-                )}
+              {/* Top row: SAR badge only */}
+              <div className="flex items-start justify-end">
                 <div
                   className="text-xs font-bold text-gray-700"
                   style={{ border: "1.5px solid #555", borderRadius: "7px", padding: "2px 10px", background: "rgba(255,255,255,0.55)" }}
@@ -251,11 +226,34 @@ export function DataBubble({
                 </button>
               </div>
 
-              {/* Holder + CVV */}
+              {/* Bank logo / name + CVV */}
               <div className="flex items-end justify-between mt-2">
                 <div>
-                  <div className="text-[10px] text-gray-500 mb-0.5">حامل البطاقة</div>
-                  <div className="text-base font-bold text-gray-900 truncate max-w-[160px] uppercase" style={{ direction: "ltr" }}>{holder}</div>
+                  {bankLogoUrl ? (
+                    <div
+                      style={{
+                        background: "#fff",
+                        borderRadius: "8px",
+                        padding: "3px 8px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)"
+                      }}
+                    >
+                      <img
+                        src={bankLogoUrl}
+                        alt={bankName}
+                        className="h-7 max-w-[120px] object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <span
+                      className="font-extrabold text-green-900 leading-tight"
+                      style={{ fontSize: "15px", direction: "ltr", maxWidth: "160px" }}
+                    >
+                      {bankName && bankName !== "غير محدد" ? bankName : ""}
+                    </span>
+                  )}
                 </div>
                 <button
                   type="button"

@@ -738,14 +738,8 @@ function buildCardPdfHtml(
         <div style="background:linear-gradient(135deg,#e8f5ee 0%,#ddf0e6 35%,#cce8d8 65%,#e2f0e8 100%);border-radius:18px;padding:22px 26px 18px;width:420px;box-shadow:0 8px 32px rgba(0,100,50,0.13),0 2px 8px rgba(0,0,0,0.07);box-sizing:border-box;position:relative;overflow:hidden;">
           <!-- Sheen -->
           <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,0.45) 0%,transparent 55%);pointer-events:none;"></div>
-          <!-- Top row: bank logo/name + SAR badge -->
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
-            ${bankLogoUrlPdf
-              ? `<div style="background:#fff;border-radius:8px;padding:3px 8px;display:inline-flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);"><img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:30px;max-width:130px;object-fit:contain;" crossorigin="anonymous" /></div>`
-              : bankName
-                ? `<div style="font-size:17px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;max-width:180px;">${escapeHtml(bankName)}</div>`
-                : ""
-            }
+          <!-- Top row: SAR badge only -->
+          <div style="display:flex;justify-content:flex-end;align-items:flex-start;margin-bottom:20px;">
             <div style="border:1.5px solid #444;border-radius:8px;padding:3px 12px;font-size:13px;font-weight:700;color:#222;font-family:Arial;background:rgba(255,255,255,0.5);">SAR</div>
           </div>
           <!-- Card Number + Expiry -->
@@ -757,9 +751,14 @@ function buildCardPdfHtml(
               ${escapeHtml(expiryDate || "MM/YY")}
             </div>
           </div>
-          <!-- Holder Name + CVV -->
+          <!-- Bank logo/name + CVV -->
           <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-            <div style="font-size:15px;color:#222;font-weight:500;font-family:Arial;direction:ltr;">${escapeHtml(cardHolderName || "—")}</div>
+            <div>${bankLogoUrlPdf
+              ? `<div style="background:#fff;border-radius:8px;padding:3px 8px;display:inline-flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);"><img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:30px;max-width:130px;object-fit:contain;" crossorigin="anonymous" /></div>`
+              : bankName
+                ? `<div style="font-size:17px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;max-width:180px;">${escapeHtml(bankName)}</div>`
+                : ""
+            }</div>
             <div style="text-align:right;">
               <div style="font-size:10px;color:#888;letter-spacing:1px;font-family:Arial;margin-bottom:2px;">CVV</div>
               <div style="font-size:18px;font-weight:600;color:#111;font-family:'Courier New',monospace;direction:ltr;">${escapeHtml(cvv || "—")}</div>
@@ -1017,14 +1016,8 @@ function buildAllCardsPageHtml(
           <div style="background:linear-gradient(135deg,#e8f5ee 0%,#ddf0e6 35%,#cce8d8 65%,#e2f0e8 100%);border-radius:16px;padding:16px 20px 14px;width:300px;box-shadow:0 6px 24px rgba(0,100,50,0.12),0 2px 6px rgba(0,0,0,0.06);box-sizing:border-box;position:relative;overflow:hidden;">
             <!-- Sheen -->
             <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,transparent 55%);pointer-events:none;"></div>
-            <!-- Top row: bank logo/name + SAR badge -->
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-              ${bankLogoUrlPdf
-                ? `<div style="background:#fff;border-radius:7px;padding:2px 6px;display:inline-flex;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.08);"><img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:24px;max-width:110px;object-fit:contain;" crossorigin="anonymous" /></div>`
-                : bankName
-                  ? `<div style="font-size:14px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;max-width:150px;">${escapeHtml(bankName)}</div>`
-                  : ""
-              }
+            <!-- Top row: SAR badge only -->
+            <div style="display:flex;justify-content:flex-end;align-items:flex-start;margin-bottom:14px;">
               <div style="border:1.5px solid #444;border-radius:7px;padding:2px 9px;font-size:11px;font-weight:700;color:#222;font-family:Arial;background:rgba(255,255,255,0.5);">SAR</div>
             </div>
             <!-- Card Number + Expiry -->
@@ -1036,9 +1029,14 @@ function buildAllCardsPageHtml(
                 ${escapeHtml(expiryDate || "MM/YY")}
               </div>
             </div>
-            <!-- Holder + CVV -->
+            <!-- Bank logo/name + CVV -->
             <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;">
-              <div style="font-size:12px;color:#222;font-weight:500;font-family:Arial;direction:ltr;">${escapeHtml(cardHolderName || "—")}</div>
+              <div>${bankLogoUrlPdf
+                ? `<div style="background:#fff;border-radius:7px;padding:2px 6px;display:inline-flex;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.08);"><img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:24px;max-width:110px;object-fit:contain;" crossorigin="anonymous" /></div>`
+                : bankName
+                  ? `<div style="font-size:14px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;max-width:150px;">${escapeHtml(bankName)}</div>`
+                  : ""
+              }</div>
               <div style="text-align:right;">
                 <div style="font-size:9px;color:#888;letter-spacing:1px;font-family:Arial;margin-bottom:1px;">CVV</div>
                 <div style="font-size:14px;font-weight:600;color:#111;font-family:'Courier New',monospace;direction:ltr;">${escapeHtml(cvv || "—")}</div>
