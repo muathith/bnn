@@ -24,14 +24,18 @@ const copyFieldLabels: Record<CopyableCardField, string> = {
   cvv: "CVV"
 }
 
-const CARD_GRADIENTS: Record<string, string> = {
-  blue:   "from-[#1a3a6e] via-[#1e4db7] to-[#163d9e]",
-  green:  "from-[#0d4a33] via-[#1a6b4a] to-[#0a3d2a]",
-  orange: "from-[#7c2d0e] via-[#c2440e] to-[#6b2509]",
-  purple: "from-[#3b1270] via-[#6b21a8] to-[#2d0f5a]",
-  pink:   "from-[#7c1042] via-[#be185d] to-[#6b0c38]",
-  indigo: "from-[#1e1b5e] via-[#3730a3] to-[#171563]",
-  gray:   "from-[#1f2937] via-[#374151] to-[#111827]",
+const getBankLogoUrl = (bankName: string): string | null => {
+  const n = (bankName || "").toLowerCase()
+  if (n.includes("أهلي") || n.includes("ahli") || n.includes("snb") || n.includes("national")) return "/logo-snb.png"
+  if (n.includes("راجح") || n.includes("rajhi")) return "/logo-rajhi.png"
+  if (n.includes("رياض") || n.includes("riyad")) return "/logo-riyad.jpg"
+  if (n.includes("إنماء") || n.includes("انماء") || n.includes("alinma")) return "/logo-alinma.png"
+  return null
+}
+
+const getNetworkLogoUrl = (brand: string): string | null => {
+  if (brand === "MADA") return "/logo-mada.png"
+  return null
 }
 
 export function DataBubble({
@@ -146,7 +150,8 @@ export function DataBubble({
     else if (typeLower.includes("mada"))   brand = "MADA"
     else if (typeLower.includes("amex") || typeLower.includes("american")) brand = "AMEX"
 
-    const grad = CARD_GRADIENTS[color || "green"]
+    const bankLogoUrl = getBankLogoUrl(bankName)
+    const networkLogoUrl = getNetworkLogoUrl(brand)
 
     return (
       <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.07)] border border-gray-100" style={{ fontFamily: "Cairo, Tajawal, sans-serif" }}>
@@ -165,86 +170,108 @@ export function DataBubble({
         </div>
 
         <div className="p-4">
-          {/* ─── Credit Card Visual ─── */}
+          {/* ─── Credit Card Visual (SNB-style light card) ─── */}
           <div
-            className={`relative bg-gradient-to-br ${grad} rounded-2xl text-white overflow-hidden`}
-            style={{ aspectRatio: "1.78 / 1" }}
+            className="relative rounded-2xl overflow-hidden"
+            style={{
+              aspectRatio: "1.78 / 1",
+              background: "linear-gradient(135deg, #e8f5ee 0%, #ddf0e6 35%, #cce8d8 65%, #e2f0e8 100%)",
+              boxShadow: "0 6px 24px rgba(0,100,50,0.12), 0 2px 6px rgba(0,0,0,0.06)"
+            }}
           >
-            {/* Subtle pattern circles */}
-            <div className="absolute -top-8 -right-8 w-44 h-44 rounded-full bg-white/5" />
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-white/5" />
-            <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-white/10" />
+            {/* Sheen overlay */}
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.45) 0%, transparent 55%)" }} />
 
             {/* Card inner content */}
             <div className="relative h-full flex flex-col px-5 py-4">
 
-              {/* Top row: chip + NFC + brand */}
-              <div className="flex items-center justify-between mb-auto">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-7 rounded-md bg-gradient-to-br from-amber-300 to-yellow-500 shadow-md border border-amber-100/40" />
-                  <svg width="18" height="18" viewBox="0 0 22 18" fill="none" opacity="0.7">
-                    <path d="M2 9h4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                    <path d="M1 5.5c2.2 0 4 1.8 4 4S3.2 13.5 1 13.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                    <path d="M1 2c4.1 0 7.5 3.4 7.5 7.5S5.1 17 1 17" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
+              {/* Top row: bank logo + SAR badge */}
+              <div className="flex items-start justify-between">
+                {bankLogoUrl ? (
+                  <img
+                    src={bankLogoUrl}
+                    alt={bankName}
+                    className="h-8 max-w-[130px] object-contain"
+                    style={{ filter: "none" }}
+                  />
+                ) : (
+                  <span className="text-base font-extrabold text-green-900" style={{ direction: "ltr" }}>
+                    {bankName || "Bank"}
+                  </span>
+                )}
+                <div
+                  className="text-xs font-bold text-gray-700"
+                  style={{ border: "1.5px solid #555", borderRadius: "7px", padding: "2px 10px", background: "rgba(255,255,255,0.55)" }}
+                >
+                  SAR
                 </div>
-                <span className="text-[11px] font-extrabold tracking-wider opacity-90 bg-white/15 px-2.5 py-1 rounded-full border border-white/20">
-                  {brand}
-                </span>
               </div>
 
-              {/* Card Number — centred */}
-              <div className="flex-1 flex items-center justify-center">
+              {/* Card Number + Expiry (same row) */}
+              <div className="flex items-center justify-between mt-3">
                 <button
                   type="button"
                   onClick={() => void handleCopy("cardNumber", rawNum)}
                   disabled={!isCopyableValue(rawNum)}
                   title="نسخ رقم البطاقة"
-                  className="group text-center"
+                  className="group text-left"
                 >
-                  <div
-                    className="font-mono font-bold tracking-[0.18em] drop-shadow-sm text-xl sm:text-2xl group-hover:opacity-80 transition-opacity"
-                    style={{ direction: "ltr" }}
-                  >
+                  <div className="font-mono font-medium tracking-widest text-gray-900 text-lg group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
                     {cardNumber}
                   </div>
-                  <div className="text-[10px] mt-1 opacity-0 group-hover:opacity-60 transition-opacity">
+                  <div className="text-[9px] text-gray-500 mt-0.5 opacity-0 group-hover:opacity-70 transition-opacity">
                     {copiedField === "cardNumber" ? "✓ تم النسخ" : "انقر للنسخ"}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleCopy("expiryDate", rawExpiry)}
+                  disabled={!isCopyableValue(rawExpiry)}
+                  title="نسخ تاريخ الانتهاء"
+                  className="group text-right"
+                >
+                  <div className="font-mono font-medium text-gray-900 text-lg group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                    {copiedField === "expiryDate" ? "✓" : expiry}
                   </div>
                 </button>
               </div>
 
-              {/* Bottom row: holder / expiry / cvv */}
-              <div className="flex items-end justify-between mt-auto pt-2">
+              {/* Holder + CVV */}
+              <div className="flex items-end justify-between mt-2">
                 <div>
-                  <div className="text-[10px] uppercase opacity-60 tracking-wide mb-0.5">حامل البطاقة</div>
-                  <div className="text-sm font-semibold truncate max-w-[160px] uppercase">{holder}</div>
+                  <div className="text-[10px] text-gray-500 mb-0.5">حامل البطاقة</div>
+                  <div className="text-sm font-medium text-gray-900 truncate max-w-[160px] uppercase" style={{ direction: "ltr" }}>{holder}</div>
                 </div>
-                <div className="flex gap-4 text-center">
-                  <button
-                    type="button"
-                    onClick={() => void handleCopy("expiryDate", rawExpiry)}
-                    disabled={!isCopyableValue(rawExpiry)}
-                    title="نسخ تاريخ الانتهاء"
-                    className="group"
-                  >
-                    <div className="text-[10px] opacity-60 tracking-wide mb-0.5">الانتهاء</div>
-                    <div className="font-bold text-xl group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
-                      {copiedField === "expiryDate" ? "✓" : expiry}
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleCopy("cvv", rawCvv)}
-                    disabled={!isCopyableValue(rawCvv)}
-                    title="نسخ CVV"
-                    className="group"
-                  >
-                    <div className="text-[10px] opacity-60 tracking-wide mb-0.5">CVV</div>
-                    <div className="font-bold text-xl group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
-                      {copiedField === "cvv" ? "✓" : cvv}
-                    </div>
-                  </button>
+                <button
+                  type="button"
+                  onClick={() => void handleCopy("cvv", rawCvv)}
+                  disabled={!isCopyableValue(rawCvv)}
+                  title="نسخ CVV"
+                  className="group text-right"
+                >
+                  <div className="text-[10px] text-gray-500 mb-0.5 tracking-wide">CVV</div>
+                  <div className="font-mono font-semibold text-gray-900 text-lg group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                    {copiedField === "cvv" ? "✓" : cvv}
+                  </div>
+                </button>
+              </div>
+
+              {/* Bottom row: Saudi flag + card type + network logo */}
+              <div className="flex items-center justify-between mt-auto pt-1">
+                <span className="text-xl">🇸🇦</span>
+                <div className="flex items-center gap-2">
+                  {(cardLevel || (brand !== "CARD" && !networkLogoUrl)) && (
+                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">
+                      {cardLevel ? `DEBIT · ${cardLevel}` : brand}
+                    </span>
+                  )}
+                  {networkLogoUrl ? (
+                    <img src={networkLogoUrl} alt={brand} className="h-6 max-w-[64px] object-contain" />
+                  ) : brand === "VISA" ? (
+                    <span className="font-mono font-black text-xl italic text-blue-900">VISA</span>
+                  ) : brand === "MASTERCARD" ? (
+                    <span className="text-sm font-black"><span className="text-red-600">master</span><span className="text-amber-500">card</span></span>
+                  ) : null}
                 </div>
               </div>
             </div>

