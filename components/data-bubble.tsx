@@ -190,15 +190,28 @@ export function DataBubble({
               {/* Top row: bank logo + SAR badge */}
               <div className="flex items-start justify-between">
                 {bankLogoUrl ? (
-                  <img
-                    src={bankLogoUrl}
-                    alt={bankName}
-                    className="h-8 max-w-[130px] object-contain"
-                    style={{ filter: "none" }}
-                  />
+                  <div
+                    style={{
+                      background: "#fff",
+                      borderRadius: "8px",
+                      padding: "3px 8px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.08)"
+                    }}
+                  >
+                    <img
+                      src={bankLogoUrl}
+                      alt={bankName}
+                      className="h-7 max-w-[120px] object-contain"
+                    />
+                  </div>
                 ) : (
-                  <span className="text-base font-extrabold text-green-900" style={{ direction: "ltr" }}>
-                    {bankName || "Bank"}
+                  <span
+                    className="font-extrabold text-green-900 leading-tight"
+                    style={{ fontSize: "15px", direction: "ltr", maxWidth: "160px" }}
+                  >
+                    {bankName && bankName !== "غير محدد" ? bankName : ""}
                   </span>
                 )}
                 <div

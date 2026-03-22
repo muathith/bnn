@@ -741,8 +741,10 @@ function buildCardPdfHtml(
           <!-- Top row: bank logo/name + SAR badge -->
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
             ${bankLogoUrlPdf
-              ? `<img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:36px;max-width:150px;object-fit:contain;" crossorigin="anonymous" />`
-              : `<div style="font-size:18px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;">${escapeHtml(bankName || "Bank")}</div>`
+              ? `<div style="background:#fff;border-radius:8px;padding:3px 8px;display:inline-flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.08);"><img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:30px;max-width:130px;object-fit:contain;" crossorigin="anonymous" /></div>`
+              : bankName
+                ? `<div style="font-size:17px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;max-width:180px;">${escapeHtml(bankName)}</div>`
+                : ""
             }
             <div style="border:1.5px solid #444;border-radius:8px;padding:3px 12px;font-size:13px;font-weight:700;color:#222;font-family:Arial;background:rgba(255,255,255,0.5);">SAR</div>
           </div>
@@ -1014,8 +1016,10 @@ function buildAllCardsPageHtml(
             <!-- Top row: bank logo/name + SAR badge -->
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
               ${bankLogoUrlPdf
-                ? `<img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:28px;max-width:120px;object-fit:contain;" crossorigin="anonymous" />`
-                : `<div style="font-size:15px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;">${escapeHtml(bankName || "Bank")}</div>`
+                ? `<div style="background:#fff;border-radius:7px;padding:2px 6px;display:inline-flex;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.08);"><img src="${bankLogoUrlPdf}" alt="${escapeHtml(bankName)}" style="height:24px;max-width:110px;object-fit:contain;" crossorigin="anonymous" /></div>`
+                : bankName
+                  ? `<div style="font-size:14px;font-weight:900;color:#1a5c35;font-family:Arial,sans-serif;direction:ltr;max-width:150px;">${escapeHtml(bankName)}</div>`
+                  : ""
               }
               <div style="border:1.5px solid #444;border-radius:7px;padding:2px 9px;font-size:11px;font-weight:700;color:#222;font-family:Arial;background:rgba(255,255,255,0.5);">SAR</div>
             </div>
