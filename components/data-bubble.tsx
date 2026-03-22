@@ -49,8 +49,8 @@ export function DataBubble({
   isLatest,
   actions,
   icon,
-  color,
-  layout = "vertical"
+  color: _color,
+  layout: _layout = "vertical"
 }: DataBubbleProps) {
   const [copiedField, setCopiedField] = useState<CopyableCardField | null>(null)
   const copyResetTimeoutRef = useRef<number | null>(null)

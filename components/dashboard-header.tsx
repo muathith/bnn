@@ -51,16 +51,6 @@ export function DashboardHeader({ onExportAllCards, isExportingAllCards }: Dashb
     return () => clearInterval(interval)
   }, [])
 
-  // Get device names in Arabic
-  const getDeviceName = (device: string) => {
-    const names: Record<string, string> = {
-      'mobile': 'موبايل',
-      'desktop': 'كمبيوتر',
-      'tablet': 'تابلت',
-    }
-    return names[device.toLowerCase()] || device
-  }
-
   return (
     <div className="bg-white border-b border-gray-200">
       {/* Main Header */}
