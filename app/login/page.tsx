@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
+import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -23,6 +24,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const navigate = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate.replace("/");
+    }
+  }, [user, authLoading, navigate]);
 
   const handleDemoLogin = async () => {
     setError("");
@@ -43,7 +51,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await sendSignInLinkToEmail(auth, email, {
-        url: window.location.href,
+        url: `${window.location.origin}/login`,
         handleCodeInApp: true,
       });
       window.localStorage.setItem("emailForSignIn", email);
