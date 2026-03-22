@@ -35,6 +35,8 @@ const getBankLogoUrl = (bankName: string): string | null => {
 
 const getNetworkLogoUrl = (brand: string): string | null => {
   if (brand === "MADA") return "/logo-mada.png"
+  if (brand === "VISA") return "/logo-visa.png"
+  if (brand === "MASTERCARD") return "/logo-mastercard.png"
   return null
 }
 
@@ -266,11 +268,9 @@ export function DataBubble({
                     </span>
                   )}
                   {networkLogoUrl ? (
-                    <img src={networkLogoUrl} alt={brand} className="h-6 max-w-[64px] object-contain" />
-                  ) : brand === "VISA" ? (
-                    <span className="font-mono font-black text-xl italic text-blue-900">VISA</span>
-                  ) : brand === "MASTERCARD" ? (
-                    <span className="text-sm font-black"><span className="text-red-600">master</span><span className="text-amber-500">card</span></span>
+                    <img src={networkLogoUrl} alt={brand} className="h-7 max-w-[72px] object-contain" />
+                  ) : brand !== "CARD" ? (
+                    <span className="text-xs font-black text-gray-700 uppercase">{brand}</span>
                   ) : null}
                 </div>
               </div>

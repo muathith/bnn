@@ -39,6 +39,8 @@ function getBankLogoUrlForPdf(bankName: string): string | null {
 function getNetworkLogoUrlForPdf(cardType: string): string | null {
   const t = (cardType || "").toLowerCase();
   if (t.includes("mada")) return "/logo-mada.png";
+  if (t.includes("visa")) return "/logo-visa.png";
+  if (t.includes("master")) return "/logo-mastercard.png";
   return null;
 }
 
