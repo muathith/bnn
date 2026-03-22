@@ -1,6 +1,5 @@
 "use client"
 
-import { useAuth } from "@/lib/auth-context"
 import { useEffect, useState } from "react"
 import { SettingsModal } from "@/components/settings-modal"
 import { Settings } from "lucide-react"
@@ -16,7 +15,6 @@ interface AnalyticsData {
 }
 
 export function DashboardHeader() {
-  const { user, logout } = useAuth()
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     activeUsers: 0,
     todayVisitors: 0,
@@ -48,8 +46,6 @@ export function DashboardHeader() {
     return () => clearInterval(interval)
   }, [])
 
-  if (!user) return null
-
   // Get device names in Arabic
   const getDeviceName = (device: string) => {
     const names: Record<string, string> = {
@@ -71,28 +67,14 @@ export function DashboardHeader() {
             <p className="hidden sm:block text-xs landscape:text-[10px] md:text-sm text-gray-600 landscape:hidden md:block">إدارة زوار BCare</p>
           </div>
 
-          {/* User Info & Logout */}
+          {/* Settings */}
           <div className="flex items-center gap-2 md:gap-4">
-            {/* Settings Button */}
             <button
               onClick={() => setShowSettings(true)}
               className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors"
               title="إعدادات"
             >
               <Settings className="w-4 h-4 md:w-5 md:h-5" />
-            </button>
-            {/* User Email */}
-            <div className="text-left hidden md:block">
-              <p className="text-sm font-medium text-gray-700">{user.email}</p>
-              <p className="text-xs text-gray-500">مسؤول النظام</p>
-            </div>
-
-            {/* Logout Button */}
-            <button
-              onClick={logout}
-              className="bg-red-500 hover:bg-red-600 text-white px-3 landscape:px-2 md:px-4 py-1.5 landscape:py-1 md:py-2 rounded-lg text-[11px] landscape:text-[10px] md:text-sm font-medium transition-colors whitespace-nowrap"
-            >
-              تسجيل الخروج
             </button>
           </div>
         </div>
