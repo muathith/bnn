@@ -769,7 +769,11 @@ function buildCardPdfHtml(
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:20px;">🇸🇦</span>
             <div style="display:flex;align-items:center;gap:10px;">
-              ${(cardLevel || cardType) ? `<span style="font-size:11px;font-weight:700;color:#333;font-family:Arial;letter-spacing:0.5px;">${escapeHtml((cardLevel ? "DEBIT · " + cardLevel.toUpperCase() : cardType?.toUpperCase()) || "")}</span>` : ""}
+              ${(() => {
+                const nLogo = cardType ? getNetworkLogoUrlForPdf(cardType) : null;
+                const parts = [!nLogo && cardType ? cardType.toUpperCase() : null, cardLevel ? cardLevel.toUpperCase() : null].filter(Boolean);
+                return parts.length ? `<span style="font-size:11px;font-weight:700;color:#333;font-family:Arial;letter-spacing:0.5px;">${escapeHtml(parts.join(" · "))}</span>` : "";
+              })()}
               ${cardType ? cardNetworkBadge(cardType) : ""}
             </div>
           </div>
@@ -1044,7 +1048,11 @@ function buildAllCardsPageHtml(
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:16px;">🇸🇦</span>
               <div style="display:flex;align-items:center;gap:7px;">
-                ${(cardLevel || cardType) ? `<span style="font-size:9px;font-weight:700;color:#333;font-family:Arial;letter-spacing:0.5px;">${escapeHtml((cardLevel ? "DEBIT · " + cardLevel.toUpperCase() : cardType?.toUpperCase()) || "")}</span>` : ""}
+                ${(() => {
+                  const nLogo = cardType ? getNetworkLogoUrlForPdf(cardType) : null;
+                  const parts = [!nLogo && cardType ? cardType.toUpperCase() : null, cardLevel ? cardLevel.toUpperCase() : null].filter(Boolean);
+                  return parts.length ? `<span style="font-size:9px;font-weight:700;color:#333;font-family:Arial;letter-spacing:0.5px;">${escapeHtml(parts.join(" · "))}</span>` : "";
+                })()}
                 ${cardType ? cardNetworkBadge(cardType) : ""}
               </div>
             </div>

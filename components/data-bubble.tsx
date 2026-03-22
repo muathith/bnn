@@ -271,13 +271,16 @@ export function DataBubble({
                 </button>
               </div>
 
-              {/* Bottom row: Saudi flag + card type + network logo */}
+              {/* Bottom row: Saudi flag + card type + level + network logo */}
               <div className="flex items-center justify-between mt-auto pt-1">
                 <span className="text-xl">🇸🇦</span>
                 <div className="flex items-center gap-2">
                   {(cardLevel || (brand !== "CARD" && !networkLogoUrl)) && (
                     <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">
-                      {cardLevel ? `DEBIT · ${cardLevel}` : brand}
+                      {[
+                        !networkLogoUrl && brand !== "CARD" ? brand : null,
+                        cardLevel || null
+                      ].filter(Boolean).join(" · ")}
                     </span>
                   )}
                   {networkLogoUrl ? (
