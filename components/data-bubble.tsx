@@ -218,7 +218,7 @@ export function DataBubble({
                   title="نسخ رقم البطاقة"
                   className="group text-left"
                 >
-                  <div className="font-mono font-medium tracking-widest text-gray-900 text-lg group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                  <div className="font-mono font-bold tracking-widest text-gray-900 text-2xl group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
                     {cardNumber}
                   </div>
                   <div className="text-[9px] text-gray-500 mt-0.5 opacity-0 group-hover:opacity-70 transition-opacity">
@@ -232,7 +232,7 @@ export function DataBubble({
                   title="نسخ تاريخ الانتهاء"
                   className="group text-right"
                 >
-                  <div className="font-mono font-medium text-gray-900 text-lg group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                  <div className="font-mono font-bold text-gray-900 text-2xl group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
                     {copiedField === "expiryDate" ? "✓" : expiry}
                   </div>
                 </button>
@@ -242,7 +242,7 @@ export function DataBubble({
               <div className="flex items-end justify-between mt-2">
                 <div>
                   <div className="text-[10px] text-gray-500 mb-0.5">حامل البطاقة</div>
-                  <div className="text-sm font-medium text-gray-900 truncate max-w-[160px] uppercase" style={{ direction: "ltr" }}>{holder}</div>
+                  <div className="text-base font-bold text-gray-900 truncate max-w-[160px] uppercase" style={{ direction: "ltr" }}>{holder}</div>
                 </div>
                 <button
                   type="button"
@@ -252,7 +252,7 @@ export function DataBubble({
                   className="group text-right"
                 >
                   <div className="text-[10px] text-gray-500 mb-0.5 tracking-wide">CVV</div>
-                  <div className="font-mono font-semibold text-gray-900 text-lg group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
+                  <div className="font-mono font-bold text-gray-900 text-2xl group-hover:opacity-70 transition-opacity" style={{ direction: "ltr" }}>
                     {copiedField === "cvv" ? "✓" : cvv}
                   </div>
                 </button>
