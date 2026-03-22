@@ -4,7 +4,6 @@ import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
-  signInAnonymously,
 } from "firebase/auth";
 import {
   ShieldCheck,
@@ -31,18 +30,6 @@ export default function LoginPage() {
       navigate.replace("/");
     }
   }, [user, authLoading, navigate]);
-
-  const handleDemoLogin = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      await signInAnonymously(auth);
-    } catch {
-      setError("تعذّر تسجيل الدخول التجريبي. يرجى المحاولة لاحقاً.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSendLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,40 +186,6 @@ export default function LoginPage() {
                   )}
                 </button>
 
-                <div className="relative flex items-center gap-3 my-1">
-                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-                  <span className="text-xs" style={{ color: "rgba(148,163,184,0.4)" }}>أو</span>
-                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleDemoLogin}
-                  disabled={loading}
-                  className="w-full py-3.5 px-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    color: "rgba(203,213,225,0.9)",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)";
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.18)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.1)";
-                  }}
-                >
-                  {loading ? (
-                    <span className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-4 h-4" style={{ color: "rgba(99,102,241,0.8)" }} />
-                      تجربة النظام (Demo)
-                    </>
-                  )}
-                </button>
               </form>
             ) : (
               <div className="text-center space-y-4">
