@@ -163,7 +163,7 @@ export default function Dashboard() {
 
   // Play notification sound
   const playNotificationSound = () => {
-    const audio = new Audio("/notification.wav");
+    const audio = new Audio("/notification-piano.mp3");
     audio.play().catch((e) => console.log("Could not play sound:", e));
   };
 
